@@ -234,6 +234,7 @@
                 scaleindex = document.querySelector('input[type=radio]:checked').value;
                 setCSS(scaleindex);
             })
+            cdb.$('select').on('change', changes);
         };
 
     window.onload = init;
