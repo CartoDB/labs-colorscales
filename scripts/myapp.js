@@ -163,14 +163,14 @@
                     w = logscale[i + 1] - logscale[i];
                     t += '<div style="height:' + h0 + 'px;width:' + w * center + '%;background:' + ramp0[i] + ';"></div>';
                     d += '<div class="chartblock" style="height:' + chroma(ramp0[i]).lab()[0] + 'px;width:' + w * center + '%;"></div>';
-                    window.myapp.cartocss[4] += '\n[' + fieldname + '>' + (p.min + f * (p.max - p.min) / 100) + ']{\n' + fieldtype + '-fill: ' + ramp0[i] + ';\n}';
+                    window.myapp.cartocss[5] += '\n[' + fieldname + '>' + (p.min + f * (p.max - p.min) / 100) + ']{\n' + fieldtype + '-fill: ' + ramp0[i] + ';\n}';
                     f += w * center;
                 }
                 for (var i = 0; i < ramp1.length; i++) {
                     w = logscale[ramp0.length - i] - logscale[ramp0.length - i - 1];
                     t += '<div style="height:' + h0 + 'px;width:' + w * (1 - center) + '%;background:' + ramp1[i] + ';"></div>';
                     d += '<div class="chartblock" style="height:' + chroma(ramp1[i]).lab()[0] + 'px;width:' + w * (1 - center) + '%;"></div>';
-                    window.myapp.cartocss[4] += '\n[' + fieldname + '>' + (p.min + f * (p.max - p.min) / 100) + ']{\n' + fieldtype + '-fill: ' + ramp1[i] + ';\n}';
+                    window.myapp.cartocss[5] += '\n[' + fieldname + '>' + (p.min + f * (p.max - p.min) / 100) + ']{\n' + fieldtype + '-fill: ' + ramp1[i] + ';\n}';
                     f += w * (1 - center);
                 }
                 s[5].innerHTML = t;
