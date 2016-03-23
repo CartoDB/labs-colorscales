@@ -32,22 +32,34 @@ body {
     margin-top: 10px;
     margin-bottom: 10px;
     padding: 10px;
-    width:512px;
+    width:522px;
 }
 .scale{
     display:flex;
     align-items: center;
     width: 500px;
     height: 40px;
-    background: red;
     border-radius:4px;
+    border: solid 10px Gainsboro;
+    background: Gainsboro;
+}
+.scaleitem{
+    height: 40px;
 }
 .chart{
-    height: 150px;
+    margin-top:10px;
+    display:flex;
+    align-items:flex-end;
     width: 500px;
-    background: green;
+    height: 100px;
+    border-radius:4px;
+    padding-left:10px;
 }
-.CDB-InputText{
+.chartblock{
+    background: #ccc;
+    border-top: 1px solid black;
+}
+.centerpanel .CDB-InputText{
     width: 500px;
 }
 .map{
@@ -60,4 +72,10 @@ body {
     width: calc(100% - 20px);
     height: 180px;
     overflow:auto;
+}
+.attrib{
+    position:absolute;
+    z-index:99;
+    bottom:2px;
+    right: 2px;
 }

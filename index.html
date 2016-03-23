@@ -23,13 +23,14 @@
                     <input id='viz' type="text" name="text" value="https://team.cartodb.com/u/solutions/api/v3/viz/c008997c-f04e-11e5-bdf9-0ecd1babdde5/viz.json" class="CDB-InputText">
                 </div>
                 <div class="u-tSpace-xl CDB-Text CDB-Fieldset">
-                    <p class="CDB-Legend CDB-Text is-semibold CDB-Size-medium u-rSpace--m">Layer named</p>
+                    <p class="CDB-Legend CDB-Text is-semibold CDB-Size-medium u-rSpace--m">Layer name</p>
                     <input type="text" value="women" class="CDB-InputText">
                 </div>
                 <div class="u-tSpace-xl CDB-Text CDB-Fieldset">
                     <p class="CDB-Legend CDB-Text is-semibold CDB-Size-medium u-rSpace--m">Field name</p>
                     <input type="text" value="women" class="CDB-InputText">
-                </div><br>
+                </div>
+                <br>
                 <select name="select" class="CDB-SelectFake CDB-Text">
                     <option value="vmarker">Marker</option>
                     <option value="line">Line</option>
@@ -43,7 +44,7 @@
                 </div>
                 <div class="u-tSpace-xl CDB-Text CDB-Fieldset">
                     <p class="CDB-Legend CDB-Text is-semibold CDB-Size-medium u-rSpace--m">Number of steps in the output</p>
-                    <input type="number" min=2 max=100 step=1 value=5 class="CDB-InputText">
+                    <input type="number" min=2 max=100 step=1 value=11 class="CDB-InputText">
                 </div>
             </div>
             <div class="CDB-Box-Modal scalebox">
@@ -53,7 +54,7 @@
                 </div>
                 <div class="u-tSpace-xl CDB-Text CDB-Fieldset">
                     <p class="CDB-Legend CDB-Text is-semibold CDB-Size-medium u-rSpace--m">Point of interest (mode)</p>
-                    <input type="number" class="CDB-InputText" value=52>
+                    <input type="number" class="CDB-InputText" value=75>
                 </div>
                 <div class="u-tSpace-xl CDB-Text CDB-Fieldset">
                     <p class="CDB-Legend CDB-Text is-semibold CDB-Size-medium u-rSpace--m">Max value</p>
@@ -62,13 +63,13 @@
             </div>
             <div class="CDB-Box-Modal scalebox">
                 <div class="u-iblock CDB-Text CDB-Size-medium u-rSpace--xl">
-                    <input class="CDB-Checkbox" type="checkbox" name="hobbies" value="bezier" checked>
+                    <input class="CDB-Checkbox" type="checkbox" name="params" value="bezier" checked>
                     <span class="u-iBlock CDB-Checkbox-face"></span>
                     <label class="u-iBlock u-lSpace">Bezier interpolation</label>
                 </div>
                 <br>
                 <div class="u-iblock CDB-Text CDB-Size-medium u-rSpace--xl">
-                    <input class="CDB-Checkbox" type="checkbox" name="hobbies" value="luminfix" checked>
+                    <input class="CDB-Checkbox" type="checkbox" name="params" value="luminfix" checked>
                     <span class="u-iBlock CDB-Checkbox-face"></span>
                     <label class="u-iBlock u-lSpace">Correct lightness gradient</label>
                 </div>
@@ -76,12 +77,11 @@
         </div>
         <div class='centerpanel'>
             <div class="CDB-Box-Modal scalebox">
-                <!--                <p class="CDB-Text CDB-Size-large">Original</p>-->
                 <input class="CDB-Radio" type="radio" name="veritas" value="0" checked>
                 <span class="u-iBlock CDB-Radio-face"></span>
                 <label class="u-iBlock u-lSpace CDB-Size-large">Original</label>
                 <div class='scale'></div>
-<!--                <div class='chart'></div>-->
+                <div class='chart'></div>
                 <br>
                 <input type='text' class="CDB-InputText CDB-Text" s value="['#ffffcc','#a1dab4','#41b6c4','#2c7fb8','#253494']">
             </div>
@@ -90,43 +90,43 @@
                 <span class="u-iBlock CDB-Radio-face"></span>
                 <label class="u-iBlock u-lSpace CDB-Size-large">Linear</label>
                 <div class='scale'></div>
-<!--                <div class='chart'></div>-->
+                <div class='chart'></div>
                 <br>
                 <input type='text' class="CDB-InputText CDB-Text" s value="['#ffffcc','#a1dab4','#41b6c4','#2c7fb8','#253494']">
             </div>
             <div class="CDB-Box-Modal scalebox">
                 <input class="CDB-Radio" type="radio" name="veritas" value="2">
                 <span class="u-iBlock CDB-Radio-face"></span>
-                <label class="u-iBlock u-lSpace CDB-Size-large">Log-start</label>
+                <label class="u-iBlock u-lSpace CDB-Size-large">Log - start</label>
                 <div class='scale'></div>
-<!--                <div class='chart'></div>-->
+                <div class='chart'></div>
                 <br>
                 <input type='text' class="CDB-InputText CDB-Text" s value="['#ffffcc','#a1dab4','#41b6c4','#2c7fb8','#253494']">
             </div>
             <div class="CDB-Box-Modal scalebox">
                 <input class="CDB-Radio" type="radio" name="veritas" value="3">
                 <span class="u-iBlock CDB-Radio-face"></span>
-                <label class="u-iBlock u-lSpace CDB-Size-large">Log-end</label>
+                <label class="u-iBlock u-lSpace CDB-Size-large">Log - end</label>
                 <div class='scale'></div>
-<!--                <div class='chart'></div>-->
+                <div class='chart'></div>
                 <br>
                 <input type='text' class="CDB-InputText CDB-Text" s value="['#ffffcc','#a1dab4','#41b6c4','#2c7fb8','#253494']">
             </div>
             <div class="CDB-Box-Modal scalebox">
                 <input class="CDB-Radio" type="radio" name="veritas" value="4">
                 <span class="u-iBlock CDB-Radio-face"></span>
-                <label class="u-iBlock u-lSpace CDB-Size-large">Divergent-linear</label>
+                <label class="u-iBlock u-lSpace CDB-Size-large">Log - center</label>
                 <div class='scale'></div>
-<!--                <div class='chart'></div>-->
+                <div class='chart'></div>
                 <br>
                 <input type='text' class="CDB-InputText CDB-Text" s value="['#ffffcc','#a1dab4','#41b6c4','#2c7fb8','#253494']">
             </div>
             <div class="CDB-Box-Modal scalebox">
                 <input class="CDB-Radio" type="radio" name="veritas" value="5">
                 <span class="u-iBlock CDB-Radio-face"></span>
-                <label class="u-iBlock u-lSpace CDB-Size-large">Divergent-log</label>
+                <label class="u-iBlock u-lSpace CDB-Size-large">Log - shifted to POI</label>
                 <div class='scale'></div>
-<!--                <div class='chart'></div>-->
+                <div class='chart'></div>
                 <br>
                 <input type='text' class="CDB-InputText CDB-Text" s value="['#ffffcc','#a1dab4','#41b6c4','#2c7fb8','#253494']">
             </div>
@@ -136,4 +136,5 @@
             <div class="CDB-Box-Modal scalebox cartobox"></div>
         </div>
     </div>
+    <div class='attrib'><p class="CDB-Text CDB-Size-small">CartoDB Scales Designer/Tester v0.1 2016-03-23</p></div>
 </body>
