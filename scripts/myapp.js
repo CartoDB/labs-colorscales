@@ -157,6 +157,7 @@
                 //log shifted
                 t = '';
                 d = '';
+                f = 0;
                 window.myapp.cartocss[5] =  '/** Log shifted scale */\n'+cssheader + '\n' + fieldtype + '-fill: ' + ramp0[0] + ';';
                 center = (p.poi - p.min) / (p.max - p.min);
                 for (var i = 0; i < ramp0.length; i++) {
