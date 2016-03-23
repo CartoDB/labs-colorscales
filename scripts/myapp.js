@@ -66,7 +66,7 @@
                 //original:
                 t = '';
                 d = '';
-                window.myapp.cartocss[0] = cssheader + '\n' + fieldtype + '-fill: ' + p.scale[0] + ';';
+                window.myapp.cartocss[0] = '/** Original scale */\n'+ cssheader + '\n' + fieldtype + '-fill: ' + p.scale[0] + ';';
                 w = 100 / p.scale.length;
                 f = 0;
                 for (var i = 0; i < p.scale.length; i++) {
@@ -82,7 +82,7 @@
                 //linear
                 t = '';
                 d = '';
-                window.myapp.cartocss[1] = cssheader + '\n' + fieldtype + '-fill: ' + colors[0] + ';';
+                window.myapp.cartocss[1] =  '/** Linear scale */\n'+cssheader + '\n' + fieldtype + '-fill: ' + colors[0] + ';';
                 w = 100 / p.steps;
                 f = 0;
                 for (var i = 0; i < colors.length; i++) {
@@ -99,7 +99,7 @@
                 t = '';
                 d = '';
                 f = 0;
-                window.myapp.cartocss[2] = cssheader + '\n' + fieldtype + '-fill: ' + colors[0] + ';';
+                window.myapp.cartocss[2] =  '/** Log start scale */\n'+cssheader + '\n' + fieldtype + '-fill: ' + colors[0] + ';';
                 for (var i = 0; i < colors.length; i++) {
                     w = window.myapp.params.stepsLog[colors.length - i] - window.myapp.params.stepsLog[colors.length - i - 1];
                     t += '<div style="height:' + h0 + 'px;width:' + w + '%;background:' + colors[i] + ';"></div>';
@@ -115,7 +115,7 @@
                 t = '';
                 d = '';
                 f = 0;
-                window.myapp.cartocss[3] = cssheader + '\n' + fieldtype + '-fill: ' + colors[0] + ';';
+                window.myapp.cartocss[3] =  '/** Log end scale */\n'+cssheader + '\n' + fieldtype + '-fill: ' + colors[0] + ';';
                 for (var i = 0; i < colors.length; i++) {
                     w = window.myapp.params.stepsLog[i + 1] - window.myapp.params.stepsLog[i];
                     t += '<div style="height:' + h0 + 'px;width:' + w + '%;background:' + colors[i] + ';"></div>';
@@ -135,7 +135,7 @@
                 ramp0 = (colors.length % 2 == 0) ? colors.slice(0, tmp) : colors.slice(0, tmp + 1);
                 ramp1 = colors.slice(tmp);
                 logscale = calcLog(ramp0.length);
-                window.myapp.cartocss[4] = cssheader + '\n' + fieldtype + '-fill: ' + ramp0[0] + ';';
+                window.myapp.cartocss[4] =  '/** Log centered scale */\n'+cssheader + '\n' + fieldtype + '-fill: ' + ramp0[0] + ';';
                 for (var i = 0; i < ramp0.length; i++) {
                     w = logscale[i + 1] - logscale[i];
                     t += '<div style="height:' + h0 + 'px;width:' + w / 2 + '%;background:' + ramp0[i] + ';"></div>';
@@ -157,7 +157,7 @@
                 //log shifted
                 t = '';
                 d = '';
-                window.myapp.cartocss[5] = cssheader + '\n' + fieldtype + '-fill: ' + ramp0[0] + ';';
+                window.myapp.cartocss[5] =  '/** Log shifted scale */\n'+cssheader + '\n' + fieldtype + '-fill: ' + ramp0[0] + ';';
                 center = (p.poi - p.min) / (p.max - p.min);
                 for (var i = 0; i < ramp0.length; i++) {
                     w = logscale[i + 1] - logscale[i];
@@ -197,34 +197,21 @@
                 setTimeout(setCSS(scaleindex),100);
             });
         },
+        changes = function(){
+            if (getScaleParams()) return;
+            if (buildScales()) return;
+            setCSS(scaleindex);
+        },
         setEvents = function () {
             // block 0
             window.myapp.fields[0].onkeyup = goMap;
             window.myapp.fields[1].onkeyup = goMap;
             window.myapp.fields[2].onkeyup = goMap;
             // block 1
-            window.myapp.fields[3].onkeyup = function () {
-                if (getScaleParams()) return;
-                if (myapp.params.scale.length < 5) {
-                    window.myapp.params.luminfix = document.querySelector('input[value=luminfix]').checked = false;
-                    document.querySelector('input[value=luminfix]').disabled = true;
-                } else {
-                    document.querySelector('input[value=luminfix]').disabled = false;
-                }
-                if (buildScales()) return;
-                setCSS(scaleindex);
-            };
-            window.myapp.fields[4].onchange = window.myapp.fields[4].onkeyup = function () {
-                if (getScaleParams()) return;
-                if (buildScales()) return;
-                setCSS(scaleindex);
-            };
+            window.myapp.fields[3].onkeyup = changes;
+            window.myapp.fields[4].onchange = window.myapp.fields[4].onkeyup = changes;
             // block 2
-            window.myapp.fields[5].onchange = window.myapp.fields[5].onkeyup = function () {
-                if (getScaleParams()) return;
-                if (buildScales()) return;
-                setCSS(scaleindex);
-            };
+            window.myapp.fields[5].onchange = window.myapp.fields[5].onkeyup = changes;
             window.myapp.fields[6].onchange = window.myapp.fields[6].onkeyup = function () {
                 if (getScaleParams()) return;
                 if (this.value < window.myapp.params.min || this.value > window.myapp.params.max) {
@@ -234,11 +221,7 @@
                 if (buildScales()) return;
                 setCSS(scaleindex);
             };
-            window.myapp.fields[7].onchange = window.myapp.fields[7].onkeyup = function () {
-                if (getScaleParams()) return;
-                if (buildScales()) return;                ;
-                setCSS(scaleindex);
-            };
+            window.myapp.fields[7].onchange = window.myapp.fields[7].onkeyup = changes;
             // block 3
             cdb.$('input[type=checkbox]').on('change', function () {
                 window.myapp.params.bezier = document.querySelector('input[value=bezier]').checked;
