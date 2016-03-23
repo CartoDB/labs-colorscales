@@ -67,11 +67,17 @@
                     <span class="u-iBlock CDB-Checkbox-face"></span>
                     <label class="u-iBlock u-lSpace">Bezier interpolation</label>
                 </div>
+                <div class="CDB-InfoBox">
+                    <p class="CDB-Text CDB-Size-medium u-bSpace--m"> Bezier interpolation is always done in Lab space.</p>
+                </div>
                 <br>
                 <div class="u-iblock CDB-Text CDB-Size-medium u-rSpace--xl" style="position:relative;">
                     <input class="CDB-Checkbox" type="checkbox" name="params" value="luminfix" checked>
                     <span class="u-iBlock CDB-Checkbox-face"></span>
                     <label class="u-iBlock u-lSpace">Correct lightness gradient</label>
+                </div>
+                <div class="CDB-InfoBox">
+                    <p class="CDB-Text CDB-Size-medium u-bSpace--m">The lightness correction only works for sequential color scales, where the input colors are ordered by lightness. So this won’t work for diverging color scales, yet.</p>
                 </div>
             </div>
         </div>
@@ -143,6 +149,6 @@
         </div>
     </div>
     <div class='attrib'>
-        <p class="CDB-Text CDB-Size-small">CartoDB Scales Designer/Tester v0.2.6 2016-03-23</p>
+        <p class="CDB-Text CDB-Size-small">CartoDB Scales Designer/Tester v0.2.7 2016-03-23</p>
     </div>
 </body>
