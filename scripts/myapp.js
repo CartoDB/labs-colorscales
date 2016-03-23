@@ -163,7 +163,7 @@
                     w = logscale[i + 1] - logscale[i];
                     t += '<div style="height:' + h0 + 'px;width:' + w * center + '%;background:' + ramp0[i] + ';"></div>';
                     d += '<div class="chartblock" style="height:' + chroma(ramp0[i]).lab()[0] + 'px;width:' + w * center + '%;"></div>';
-                    window.myapp.cartocss[4] += '\n[' + fieldname + '>' + (p.min + f * (p.max - p.min) / 100) + ']{\n' + fieldtype + '-fill: ' + ramp0[i] + ';\n}';
+                    window.myapp.cartocss[5] += '\n[' + fieldname + '>' + (p.min + f * (p.max - p.min) / 100) + ']{\n' + fieldtype + '-fill: ' + ramp0[i] + ';\n}';
                     f += w * center;
                 }
                 for (var i = 0; i < ramp1.length; i++) {
