@@ -7,8 +7,10 @@
     <title>CartoDB Color Scales Tool</title>
     <link rel="stylesheet" href="./themes/css/deep-insights.css" />
     <link rel="stylesheet" href="./themes/css/myapp.css" />
+    <link rel="stylesheet" href="./scripts/prettify/prettify.css" />
     <link href="//cartodb-libs.global.ssl.fastly.net/cartodbui/assets/3.23.24/favicons/favicon.ico?1443603334" rel="shortcut icon" type="image/vnd.microsoft.icon" />
     <script src="./scripts/chroma.js"></script>
+    <script src="./scripts/prettify/prettify.js"></script>
     <script src="./scripts/deep-insights.uncompressed.js"></script>
     <script src="./scripts/myapp_viz.js"></script>
     <script src="./scripts/myapp.js"></script>
@@ -32,7 +34,7 @@
                 </div>
                 <br>
                 <select name="select" class="CDB-SelectFake CDB-Text">
-                    <option value="vmarker">Marker</option>
+                    <option value="marker">Marker</option>
                     <option value="line">Line</option>
                     <option value="polygon" selected>Polygon</option>
                 </select>
@@ -54,11 +56,11 @@
                 </div>
                 <div class="u-tSpace-xl CDB-Text CDB-Fieldset">
                     <p class="CDB-Legend CDB-Text is-semibold CDB-Size-medium u-rSpace--m">Point of interest (mode)</p>
-                    <input type="number" class="CDB-InputText" value=75>
+                    <input type="number" class="CDB-InputText" value=0>
                 </div>
                 <div class="u-tSpace-xl CDB-Text CDB-Fieldset">
                     <p class="CDB-Legend CDB-Text is-semibold CDB-Size-medium u-rSpace--m">Max value</p>
-                    <input type="number" class="CDB-InputText" value=100>
+                    <input type="number" class="CDB-InputText" value=0>
                 </div>
             </div>
             <div class="CDB-Box-Modal scalebox">
@@ -149,6 +151,6 @@
         </div>
     </div>
     <div class='attrib'>
-        <p class="CDB-Text CDB-Size-small">CartoDB Scales Designer/Tester v0.2.7 2016-03-23</p>
+        <p class="CDB-Text CDB-Size-small">CartoDB Scales Designer/Tester v0.3 by <a href="https://github.com/AbelVM">AbelVM</a>  2016-03-31</p>
     </div>
 </body>
