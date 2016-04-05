@@ -10,6 +10,7 @@
             goMap(function () {
                 getDataparams(function () {
                     getScaleParams();
+                    getSQL();
                     buildScales();
                     setCSS(scaleindex);
                     setEvents();
@@ -50,6 +51,7 @@
         getDataparams = function (callback) {
             window.myapp.params.sql.execute('with b as(' + window.myapp.layer.attributes.sql + ') select GeometryType(the_geom_webmercator) as type from b limit 1').done(function (data) {
                 var field = window.myapp.fields[2].value;
+                window.myapp.params.stepsntile = data.rows[0].ntile;
                 document.querySelector('select').value = window.myapp.params.fieldtype;
                 window.myapp.params.sql.execute('with a as(' + window.myapp.layer.attributes.sql + '), b as (select ' + field + '::integer as mo from a group by ' + field + '::integer order by count(*) desc limit 1), c as (select min(a.' + field + ') as mn, max(a.' + field + ') as mx from a) select * from b,c').done(function (data) {
                     window.myapp.fields[5].value = data.rows[0].mn;
@@ -93,7 +95,11 @@
                     cssheader = '#' + layername + '{\n	' + fieldtype + '-opacity: 1;';
 
                 window.myapp.cartocss = [];
+
+                cdb.$('.myloader').removeClass('is-visible');
+
                 //original:
+                cdb.$('.myloader:eq(0)').toggleClass('is-visible');
                 t = '';
                 d = '';
                 window.myapp.cartocss[0] = '/** Original scale */\n' + cssheader + '\n	' + fieldtype + '-fill: ' + p.scale[0] + ';';
@@ -108,8 +114,10 @@
                 s[0].innerHTML = t;
                 c[0].innerHTML = d;
                 window.myapp.cartocss[0] += '\n}';
+                cdb.$('.myloader:eq(0)').toggleClass('is-visible');
 
                 //linear
+                cdb.$('.myloader:eq(1)').toggleClass('is-visible');
                 t = '';
                 d = '';
                 window.myapp.cartocss[1] = '/** Linear scale */\n' + cssheader + '\n        ' + fieldtype + '-fill: ' + colors[0] + ';';
@@ -124,8 +132,10 @@
                 s[1].innerHTML = t;
                 c[1].innerHTML = d;
                 window.myapp.cartocss[1] += '\n}';
+                cdb.$('.myloader:eq(1)').toggleClass('is-visible');
 
                 //logstart
+                cdb.$('.myloader:eq(2)').toggleClass('is-visible');
                 t = '';
                 d = '';
                 f = 0;
@@ -140,8 +150,10 @@
                 s[2].innerHTML = t;
                 c[2].innerHTML = d;
                 window.myapp.cartocss[2] += '\n}';
+                cdb.$('.myloader:eq(2)').toggleClass('is-visible');
 
                 //logend
+                cdb.$('.myloader:eq(3)').toggleClass('is-visible');
                 t = '';
                 d = '';
                 f = 0;
@@ -156,8 +168,10 @@
                 s[3].innerHTML = t;
                 c[3].innerHTML = d;
                 window.myapp.cartocss[3] += '\n}';
+                cdb.$('.myloader:eq(3)').toggleClass('is-visible');
 
                 //log center
+                cdb.$('.myloader:eq(4)').toggleClass('is-visible');
                 t = '';
                 d = '';
                 f = 0;
@@ -176,15 +190,17 @@
                 for (var i = 0; i < ramp1.length; i++) {
                     w = logscale[ramp0.length - i] - logscale[ramp0.length - i - 1];
                     t += '<div style="height:' + h0 + 'px;width:' + w / 2 + '%;background:' + ramp1[i] + ';"></div>';
-                        d += '<div class="chartblock" style="height:' + chroma(ramp1[i]).lab()[0] + 'px;width:' + w / 2 + '%;"></div>';
-                        window.myapp.cartocss[4] += '\n	[' + fieldname + '>' + (p.min + f * (p.max - p.min) / 100) + ']{\n		' + fieldtype + '-fill: ' + ramp1[i] + ';\n         }';
+                    d += '<div class="chartblock" style="height:' + chroma(ramp1[i]).lab()[0] + 'px;width:' + w / 2 + '%;"></div>';
+                    window.myapp.cartocss[4] += '\n	[' + fieldname + '>' + (p.min + f * (p.max - p.min) / 100) + ']{\n		' + fieldtype + '-fill: ' + ramp1[i] + ';\n         }';
                     f += w / 2;
                 }
                 s[4].innerHTML = t;
                 c[4].innerHTML = d;
                 window.myapp.cartocss[4] += '\n}';
+                cdb.$('.myloader:eq(4)').toggleClass('is-visible');
 
                 //log shifted
+                cdb.$('.myloader:eq(5)').toggleClass('is-visible');
                 t = '';
                 d = '';
                 f = 0;
@@ -207,28 +223,125 @@
                 s[5].innerHTML = t;
                 c[5].innerHTML = d;
                 window.myapp.cartocss[5] += '\n}';
+                cdb.$('.myloader:eq(5)').toggleClass('is-visible');
+
+                // n-tiles & jenks
+                // https://github.com/CartoDB/cartodb-postgresql/tree/master/doc
+                cdb.$('.myloader:eq(6)').toggleClass('is-visible');
+                cdb.$('.myloader:eq(7)').toggleClass('is-visible');
+                window.myapp.params.sql.execute('with b as(' + window.myapp.layer.attributes.sql + ') select CDB_QuantileBins(array_agg(' + fieldname + '::numeric), ' + window.myapp.params.steps + ') as ntile, CDB_JenksBins(array_agg(' + fieldname + '::numeric), ' + window.myapp.params.steps + ') as jenks from b').done(function (data) {
+                    window.myapp.params.stepsntile = data.rows[0].ntile;
+                    window.myapp.params.stepsjenks = data.rows[0].jenks.filter(function (a) {
+                        return a != null
+                    });
+                    window.myapp.params.stepsntile.unshift(0);
+                    window.myapp.params.stepsjenks.unshift(0);
+                    t = '';
+                    d = '';
+                    f = 0;
+                    window.myapp.cartocss[6] = '/** n-tile scale */\n' + cssheader + '\n         ' + fieldtype + '-fill: ' + colors[0] + ';';
+                    for (var i = 0; i < colors.length; i++) {
+                        w = 100 * (window.myapp.params.stepsntile[i + 1] - window.myapp.params.stepsntile[i]) / (window.myapp.params.stepsntile[colors.length] - window.myapp.params.stepsntile[0]);
+                        t += '<div style="height:' + h0 + 'px;width:' + w + '%;background:' + colors[i] + ';"></div>';
+                        d += '<div class="chartblock" style="height:' + chroma(colors[i]).lab()[0] + 'px;width:' + w + '%;"></div>';
+                        window.myapp.cartocss[6] += '\n	[' + fieldname + '>' + window.myapp.params.stepsntile[i] + ']{\n		' + fieldtype + '-fill: ' + colors[i] + ';\n        }';
+                        f += w;
+                    }
+                    s[6].innerHTML = t;
+                    c[6].innerHTML = d;
+                    window.myapp.cartocss[6] += '\n}';
+                    cdb.$('.myloader:eq(6)').toggleClass('is-visible');
+
+                    t = '';
+                    d = '';
+                    f = 0;
+                    window.myapp.cartocss[7] = '/** n-tile scale */\n' + cssheader + '\n         ' + fieldtype + '-fill: ' + colors[0] + ';';
+                    for (var i = 0; i < window.myapp.params.stepsjenks.length; i++) {
+                        w = 100 * (window.myapp.params.stepsjenks[i + 1] - window.myapp.params.stepsjenks[i]) / (window.myapp.params.stepsjenks[window.myapp.params.stepsjenks.length - 1] - window.myapp.params.stepsjenks[0]);
+                        t += '<div style="height:' + h0 + 'px;width:' + w + '%;background:' + colors[i] + ';"></div>';
+                        d += '<div class="chartblock" style="height:' + chroma(colors[i]).lab()[0] + 'px;width:' + w + '%;"></div>';
+                        window.myapp.cartocss[7] += '\n	[' + fieldname + '>' + window.myapp.params.stepsjenks[i] + ']{\n		' + fieldtype + '-fill: ' + colors[i] + ';\n        }';
+                        f += w;
+                    }
+                    s[7].innerHTML = t;
+                    c[7].innerHTML = d;
+                    window.myapp.cartocss[7] += '\n}';
+                    cdb.$('.myloader:eq(7)').toggleClass('is-visible');
+                }).error(function(errors) {
+                    cdb.$('.myloader:eq(6)').toggleClass('is-visible');
+                    cdb.$('.myloader:eq(7)').toggleClass('is-visible');
+                });
+
+                // stddev
+                // https://gist.github.com/ohasselblad/f00953760fc63b60c1a9d3a90748ac61
+                // http://gennick.com/database/stddev-standing-sentinel-on-your-data
+                /*
+                with a as(
+                  SELECT *,100.0*t2_2::float/t1_1::float as women FROM andrew.spain_census2011
+                ),
+                b as(
+                select
+                    women,
+                    TRUNC(
+                          (AVG(women) - AVG(AVG(women)) OVER ()) / trunc((STDDEV(AVG(women)) OVER ())::numeric, 5)
+                    ) AS Bucket
+                from a
+                group by women
+                  ),
+                c as(
+                select
+                max(women) as mx
+                from b
+                group by bucket order by bucket
+                )
+                select array_agg(mx) from c
+                */
+                cdb.$('.myloader:eq(8)').toggleClass('is-visible');
+                window.myapp.params.sql.execute('with a as(' + window.myapp.layer.attributes.sql + '), b as( select ' + fieldname + ', TRUNC((AVG(' + fieldname + ') - AVG(AVG(' + fieldname + ')) OVER ()) / trunc((STDDEV(AVG(' + fieldname + ')) OVER ())::numeric, 5) ) AS Bucket from a group by ' + fieldname + ' ), c as( select max(' + fieldname + ') as mx from b group by bucket order by bucket ) select array_agg(mx) as stdev from c').done(function (data) {
+                    window.myapp.params.stepstdev = data.rows[0].stdev.filter(function(a){return a != null});
+                    var colors2 =colorscale.colors(window.myapp.params.stepstdev.length);
+                    t = '';
+                    d = '';
+                    f = 0;
+                    window.myapp.cartocss[8] = '/** n-tile scale */\n' + cssheader + '\n         ' + fieldtype + '-fill: ' + colors[0] + ';';
+                    for (var i = 0; i < window.myapp.params.stepstdev.length; i++) {
+                        w = 100 * (window.myapp.params.stepstdev[i + 1] - window.myapp.params.stepstdev[i]) / (window.myapp.params.stepstdev[window.myapp.params.stepstdev.length - 1] - window.myapp.params.stepstdev[0]);
+                        t += '<div style="height:' + h0 + 'px;width:' + w + '%;background:' + colors2[i] + ';"></div>';
+                        d += '<div class="chartblock" style="height:' + chroma(colors2[i]).lab()[0] + 'px;width:' + w + '%;"></div>';
+                        window.myapp.cartocss[8] += '\n	[' + fieldname + '>' + window.myapp.params.stepstdev[i] + ']{\n		' + fieldtype + '-fill: ' + colors2[i] + ';\n        }';
+                        f += w;
+                    }
+                    s[8].innerHTML = t;
+                    c[8].innerHTML = d;
+                    window.myapp.cartocss[8] += '\n}';
+                    cdb.$('.myloader:eq(8)').toggleClass('is-visible');
+                }).error(function(errors) {
+                    cdb.$('.myloader:eq(8)').toggleClass('is-visible');
+                });
+
                 return false;
             } catch (error) {
                 return true;
+                console.log('buildScales error: ' + error);
             }
 
         },
         setCSS = function (index) {
-            var pre = cdb.L.DomUtil.create('pre','prettyprint lang-css'),
+            var pre = cdb.L.DomUtil.create('pre', 'prettyprint lang-css'),
                 escapeHtml = function (text) {
-                var map = {
-                    '&': '&amp;',
-                    '<': '&lt;',
-                    '>': '&gt;',
-                    '"': '&quot;',
-                    "'": '&#039;'
-                };
-                return text.replace(/[&<>"']/g, function (m) {
-                    return map[m];
-                });
-            }
+                    var map = {
+                        '&': '&amp;',
+                        '<': '&lt;',
+                        '>': '&gt;',
+                        '"': '&quot;',
+                        "'": '&#039;'
+                    };
+                    return text.replace(/[&<>"']/g, function (m) {
+                        return map[m];
+                    });
+                }
             window.myapp.layer.set('cartocss', myapp.cartocss[index]);
-            pre.id='cartocss';
+            pre.id = 'cartocss';
             pre.innerHTML = escapeHtml(myapp.cartocss[index]);
             document.querySelector('.cartobox').innerHTML = '';
             document.querySelector('.cartobox').appendChild(pre);
@@ -248,6 +361,7 @@
         },
         changes = function () {
             if (getScaleParams()) return;
+            getSQL();
             if (buildScales()) return;
             setCSS(scaleindex);
         },

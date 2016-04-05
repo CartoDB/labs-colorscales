@@ -15,6 +15,14 @@ Test it at
 * Syntax hightlighted CartoCSS
 * minor fixes
 
+### v 0.4
+* New scales:
+    * n-tiles
+    * jenks
+    * StdDev
+* loaders
+* minor fixes
+
 ## TODO
 
 * Let the user select the number of bins for retrievieng the mode?

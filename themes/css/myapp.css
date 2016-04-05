@@ -89,3 +89,8 @@ body {
 pre.prettyprint {
     border: none !important;
 }
+
+.CDB-Loader {
+    position:relative !important;
+    margin-bottom: 5px;
+}
