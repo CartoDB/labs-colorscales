@@ -19,11 +19,22 @@ Test it at
 * New scales:
     * n-tiles
     * jenks
-    * StdDev
+    * StdDevs
 * loaders
+* minor fixes
+
+### v 0.4.1
 * minor fixes
 
 ## TODO
 
+##### short term
+* Add tooltips to histogram, colors, etc
+* Display interpolated scale values
+* Display layer query
+* **Use color ramp as variables in cartocss!!!!**
+
+##### medium term
 * Let the user select the number of bins for retrievieng the mode?
 * Add different color spaces as options
+* Add turbocartocss support
