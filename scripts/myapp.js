@@ -58,6 +58,8 @@
                     window.myapp.fields[6].value = data.rows[0].mo;
                     window.myapp.fields[7].value = data.rows[0].mx;
                     callback();
+                }).error(function (errors) {
+                    console.log(errors);
                 });
             })
         },
@@ -267,7 +269,7 @@
                     c[7].innerHTML = d;
                     window.myapp.cartocss[7] += '\n}';
                     cdb.$('.myloader:eq(7)').toggleClass('is-visible');
-                }).error(function(errors) {
+                }).error(function (errors) {
                     cdb.$('.myloader:eq(6)').toggleClass('is-visible');
                     cdb.$('.myloader:eq(7)').toggleClass('is-visible');
                 });
@@ -298,8 +300,10 @@
                 */
                 cdb.$('.myloader:eq(8)').toggleClass('is-visible');
                 window.myapp.params.sql.execute('with a as(' + window.myapp.layer.attributes.sql + '), b as( select ' + fieldname + ', TRUNC((AVG(' + fieldname + ') - AVG(AVG(' + fieldname + ')) OVER ()) / trunc((STDDEV(AVG(' + fieldname + ')) OVER ())::numeric, 5) ) AS Bucket from a group by ' + fieldname + ' ), c as( select max(' + fieldname + ') as mx from b group by bucket order by bucket ) select array_agg(mx) as stdev from c').done(function (data) {
-                    window.myapp.params.stepstdev = data.rows[0].stdev.filter(function(a){return a != null});
-                    var colors2 =colorscale.colors(window.myapp.params.stepstdev.length);
+                    window.myapp.params.stepstdev = data.rows[0].stdev.filter(function (a) {
+                        return a != null
+                    });
+                    var colors2 = colorscale.colors(window.myapp.params.stepstdev.length);
                     t = '';
                     d = '';
                     f = 0;
@@ -315,7 +319,7 @@
                     c[8].innerHTML = d;
                     window.myapp.cartocss[8] += '\n}';
                     cdb.$('.myloader:eq(8)').toggleClass('is-visible');
-                }).error(function(errors) {
+                }).error(function (errors) {
                     cdb.$('.myloader:eq(8)').toggleClass('is-visible');
                 });
 
@@ -352,6 +356,7 @@
                 viz = p.viz,
                 layername = p.layername,
                 fieldname = p.fieldname;
+            document.querySelector('#map').innerHTML = '';
             cartodb.createVis('map', viz).done(function (vis, layers) {
                 window.myapp.layer = layers.models.filter(function (a) {
                     return a.attributes.layer_name == layername;
@@ -365,11 +370,20 @@
             if (buildScales()) return;
             setCSS(scaleindex);
         },
+        changes2 = function () {
+            getSQL();
+            getDataparams(function () {
+                if (getScaleParams()) return;
+                getSQL();
+                if (buildScales()) return;
+                setCSS(scaleindex);
+            });
+        },
         setEvents = function () {
             // block 0
             window.myapp.fields[0].onkeyup = init;
-            window.myapp.fields[1].onkeyup = init;
-            window.myapp.fields[2].onkeyup = init;
+            window.myapp.fields[1].onkeyup = changes;
+            window.myapp.fields[2].onkeyup = changes2;
             // block 1
             window.myapp.fields[3].onkeyup = changes;
             window.myapp.fields[4].onchange = window.myapp.fields[4].onkeyup = changes;
