@@ -68,10 +68,10 @@ body {
 .map{
     height: calc(100% - 220px);
     width: 100%;
-    background:blue;
 }
 .cartobox{
     margin-top: 10px;
+    padding:10px;
     width: calc(100% - 20px);
     height: 180px;
     overflow:hidden;
@@ -88,9 +88,21 @@ body {
 }
 pre.prettyprint {
     border: none !important;
+    border-radius:4px;
+    min-height: 2em;
+    background: #F9F9F9;
+    padding: 10px !important;
+    max-height: calc(100% - 20px);
 }
 
 .CDB-Loader {
     position:relative !important;
     margin-bottom: 5px;
+}
+
+.myquery,
+.myscale{
+    margin-top: 10px;
+    margin-bottom: 10px;
+    min-height: 2em;
 }

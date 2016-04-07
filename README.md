@@ -7,12 +7,14 @@ Test it at
 
 ## CHANGELOG
 
-### v 0.3
-* Params guessing:
-    * layer owner
-    * min, max and POI (mode) from the layer query
-    * geometry type
-* Syntax hightlighted CartoCSS
+### v 0.5
+* Use color ramp as variables in cartocss
+* Color tooltips
+* Display interpolated scale values
+* Display layer query
+* minor fixes
+
+### v 0.4.1
 * minor fixes
 
 ### v 0.4
@@ -23,18 +25,16 @@ Test it at
 * loaders
 * minor fixes
 
-### v 0.4.1
+### v 0.3
+* Params guessing:
+    * layer owner
+    * min, max and POI (mode) from the layer query
+    * geometry type
+* Syntax hightlighted CartoCSS
 * minor fixes
 
 ## TODO
 
-##### short term
-* Add tooltips to histogram, colors, etc
-* Display interpolated scale values
-* Display layer query
-* **Use color ramp as variables in cartocss!!!!**
-
-##### medium term
 * Let the user select the number of bins for retrievieng the mode?
 * Add different color spaces as options
 * Add turbocartocss support
