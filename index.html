@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name=viewport content="width=device-width initial-scale=1">
-    <title>CartoDB Color Scales Tool</title>
+    <title>CCST</title>
     <link rel="stylesheet" href="./themes/css/deep-insights.css" />
     <link rel="stylesheet" href="./themes/css/myapp.css" />
     <link rel="stylesheet" href="./scripts/prettify/prettify.css" />
@@ -20,8 +20,16 @@
     <div class="container">
         <div class='leftpanel'>
             <div class="CDB-Box-Modal scalebox">
+                <div class="CDB-HeaderInfo">
+                    <div class="CDB-HeaderNumeration CDB-Text is-semibold u-rSpace--m">1</div>
+                    <div class="CDB-HeaderInfo-Inner CDB-Text">
+                        <div class="CDB-HeaderInfo-Title u-bSpace--m">
+                            <h2 class="CDB-Text CDB-HeaderInfo-TitleText CDB-Size-large">Test bed</h2>
+                        </div>
+                    </div>
+                </div>
                 <div class="u-tSpace-xl CDB-Text CDB-Fieldset">
-                    <p class="CDB-Legend CDB-Text is-semibold CDB-Size-medium u-rSpace--m">viz.json URL(v3)</p>
+                    <p class="CDB-Legend CDB-Text is-semibold CDB-Size-medium u-rSpace--m">viz.json</p>
                     <input id='viz' type="text" name="text" value="https://team.cartodb.com/u/solutions/api/v3/viz/c008997c-f04e-11e5-bdf9-0ecd1babdde5/viz.json" class="CDB-InputText">
                 </div>
                 <div class="u-tSpace-xl CDB-Text CDB-Fieldset">
@@ -41,42 +49,72 @@
                 <div class="myquery" title="Layer query"></div>
             </div>
             <div class="CDB-Box-Modal scalebox">
+                <div class="CDB-HeaderInfo">
+                    <div class="CDB-HeaderNumeration CDB-Text is-semibold u-rSpace--m">2</div>
+                    <div class="CDB-HeaderInfo-Inner CDB-Text">
+                        <div class="CDB-HeaderInfo-Title u-bSpace--m">
+                            <h2 class="CDB-Text CDB-HeaderInfo-TitleText CDB-Size-large">Colors</h2>
+                        </div>
+                    </div>
+                </div>
                 <div class="u-tSpace-xl CDB-Text CDB-Fieldset">
                     <p class="CDB-Legend CDB-Text is-semibold CDB-Size-medium u-rSpace--m">Original scale</p>
                     <input type="text" name="text" value="['#ffffcc','#a1dab4','#41b6c4','#2c7fb8','#253494']" class="CDB-InputText">
                 </div>
                 <div class="u-tSpace-xl CDB-Text CDB-Fieldset">
-                    <p class="CDB-Legend CDB-Text is-semibold CDB-Size-medium u-rSpace--m">Number of steps in the output</p>
+                    <p class="CDB-Legend CDB-Text is-semibold CDB-Size-medium u-rSpace--m">Number of buckets</p>
                     <input type="number" min=3 max=100 step=1 value=11 class="CDB-InputText">
                 </div>
                 <div class="myscale" title="Output scale"></div>
             </div>
             <div class="CDB-Box-Modal scalebox">
+                <div class="CDB-HeaderInfo">
+                    <div class="CDB-HeaderNumeration CDB-Text is-semibold u-rSpace--m">3</div>
+                    <div class="CDB-HeaderInfo-Inner CDB-Text">
+                        <div class="CDB-HeaderInfo-Title u-bSpace--m">
+                            <h2 class="CDB-Text CDB-HeaderInfo-TitleText CDB-Size-large">Data view</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="CDB-Loader myloader"></div>
                 <div class="u-tSpace-xl CDB-Text CDB-Fieldset">
                     <p class="CDB-Legend CDB-Text is-semibold CDB-Size-medium u-rSpace--m">Min value</p>
                     <input type="number" class="CDB-InputText" value=0>
                 </div>
                 <div class="u-tSpace-xl CDB-Text CDB-Fieldset">
-                    <p class="CDB-Legend CDB-Text is-semibold CDB-Size-medium u-rSpace--m">Point of interest (mode)</p>
+                    <p class="CDB-Legend CDB-Text is-semibold CDB-Size-medium u-rSpace--m">POI</p>
                     <input type="number" class="CDB-InputText" value=0>
                 </div>
                 <div class="u-tSpace-xl CDB-Text CDB-Fieldset">
                     <p class="CDB-Legend CDB-Text is-semibold CDB-Size-medium u-rSpace--m">Max value</p>
                     <input type="number" class="CDB-InputText" value=0>
                 </div>
+                <div class='histo' title='Data histogram'></div>
+                <div class='CDB-Text CDB-Size-small u-secondaryTextColor hticks'></div>
+                <div class='CDB-Text CDB-Size-medium u-secondaryTextColor hlegend'></div>
+                <p class="CDB-Text CDB-Size-medium u-secondaryTextColor" id="nulls"></p>
             </div>
             <div class="CDB-Box-Modal scalebox">
+                <div class="CDB-HeaderInfo">
+                    <div class="CDB-HeaderNumeration CDB-Text is-semibold u-rSpace--m">4</div>
+                    <div class="CDB-HeaderInfo-Inner CDB-Text">
+                        <div class="CDB-HeaderInfo-Title u-bSpace--m">
+                            <h2 class="CDB-Text CDB-HeaderInfo-TitleText CDB-Size-large">Tweaks</h2>
+                        </div>
+                    </div>
+                </div>
+                <br>
                 <div class="u-iblock CDB-Text CDB-Size-medium u-rSpace--xl" style="position:relative;">
                     <input class="CDB-Checkbox" type="checkbox" name="params" value="bezier" checked>
                     <span class="u-iBlock CDB-Checkbox-face"></span>
                     <label class="u-iBlock u-lSpace">Bezier interpolation</label>
                 </div>
                 <div class="CDB-InfoBox">
-                    <p class="CDB-Text CDB-Size-medium u-bSpace--m"> Bezier interpolation is always done in Lab space.</p>
+                    <p class="CDB-Text CDB-Size-medium u-bSpace--m"> Bezier interpolation is always done in Lab space. Max order: 5.</p>
                 </div>
                 <br>
                 <div class="u-iblock CDB-Text CDB-Size-medium u-rSpace--xl" style="position:relative;">
-                    <input class="CDB-Checkbox" type="checkbox" name="params" value="luminfix" checked>
+                    <input class="CDB-Checkbox" type="checkbox" name="params" value="luminfix">
                     <span class="u-iBlock CDB-Checkbox-face"></span>
                     <label class="u-iBlock u-lSpace">Correct lightness gradient</label>
                 </div>
@@ -188,10 +226,13 @@
         </div>
         <div class='rightpanel'>
             <div id='map' class="map"></div>
-            <div class="CDB-Box-Modal scalebox cartobox"></div>
+            <div class="CDB-Box-Modal scalebox cartobox">
+                <div class="CDB-Loader myloader"></div>
+                <div class='mycss'></div>
+            </div>
         </div>
     </div>
     <div class='attrib'>
-        <p class="CDB-Text CDB-Size-small">CartoDB Scales Designer/Tester v0.5 by <a href="https://github.com/AbelVM">AbelVM</a>  2016-04-05</p>
+        <p class="CDB-Text CDB-Size-small">CartoDB Color Scales Tool v0.7 by <a href="https://github.com/AbelVM" target=_blank>AbelVM</a> 2016-04-08</p>
     </div>
 </body>

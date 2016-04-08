@@ -5,90 +5,110 @@ body {
     padding: 0;
     margin: 0;
     font-family: 'Open Sans';
-    overflow:hidden;
+    overflow: hidden;
 }
-.container{
-    display:flex;
+
+.container {
+    display: flex;
     height: 100%;
 }
+
 .leftpanel,
 .centerpanel,
-.rightpanel{
+.rightpanel {
     display: flex;
     flex-direction: column;
     height: calc(100% - 20px);
     overflow-y: auto;
-    padding:10px;
-    overflow-x:hidden;
+    padding: 10px;
+    overflow-x: hidden;
 }
-.centerpanel{
+
+.leftpanel {
+    width: 330px;
+}
+
+.centerpanel {
     width: 550px;
 }
-.rightpanel{
+
+.rightpanel {
     flex-grow: 100;
     flex-shrink: 5;
 }
-.scalebox{
+
+.scalebox {
     margin-top: 10px;
     margin-bottom: 10px;
     padding: 10px;
-    width:522px;
+    width: 522px;
 }
-.leftpanel .scalebox{
+
+.leftpanel .scalebox {
     width: 300px !important;
 }
-.scale{
-    display:flex;
+
+.scale {
+    margin-top: 10px;
+    display: flex;
     align-items: center;
     width: 500px;
     height: 40px;
-    border-radius:4px;
+    border-radius: 4px;
     border: solid 10px Gainsboro;
     background: Gainsboro;
 }
-.scaleitem{
+
+.scaleitem {
     height: 40px;
 }
-.chart{
-    margin-top:10px;
-    display:flex;
-    align-items:flex-end;
+
+.chart {
+    margin-top: 10px;
+    display: flex;
+    align-items: flex-end;
     width: 500px;
     height: 100px;
-    border-radius:4px;
-    padding-left:10px;
+    border-radius: 4px;
+    padding-left: 10px;
 }
-.chartblock{
-    background: #ccc;
-    border-top: 1px solid black;
+
+.chartblock {
+    background: #eee;
+    border-top: 1px solid #ccc;
 }
-.centerpanel .CDB-InputText{
+
+.centerpanel .CDB-InputText {
     width: 500px;
 }
-.map{
+
+.map {
     height: calc(100% - 220px);
     width: 100%;
 }
-.cartobox{
+
+.cartobox {
     margin-top: 10px;
-    padding:10px;
+    padding: 10px;
     width: calc(100% - 20px);
     height: 180px;
-    overflow:hidden;
+    overflow: hidden;
 }
 
-#cartocss{
+#cartocss {
     height: 100%;
 }
-.attrib{
-    position:absolute;
-    z-index:99;
-    bottom:2px;
+
+.attrib {
+    position: absolute;
+    z-index: 99;
+    bottom: 2px;
     right: 2px;
 }
+
 pre.prettyprint {
     border: none !important;
-    border-radius:4px;
+    border-radius: 4px;
     min-height: 2em;
     background: #F9F9F9;
     padding: 10px !important;
@@ -96,13 +116,48 @@ pre.prettyprint {
 }
 
 .CDB-Loader {
-    position:relative !important;
+    position: relative !important;
     margin-bottom: 5px;
 }
 
 .myquery,
-.myscale{
+.myscale {
     margin-top: 10px;
     margin-bottom: 10px;
     min-height: 2em;
+}
+
+.mycss {
+    height: calc(100% - 10px);
+}
+
+.histo {
+    margin-top: 10px;
+    display: flex;
+    align-items: flex-end;
+    height: 50px;
+    border-right: solid 0.5px #ddd;
+    border-bottom: solid 0.5px #ddd;
+    background-size: calc(25% + 0.5px) 10px;
+    background-image: linear-gradient(to right, #ddd 1px, transparent 1px), linear-gradient(to bottom, #ddd 1px, transparent 1px);
+}
+
+.histoblock {
+    background: #9de0ad;
+    margin-left: 0.5px;
+    margin-right: 0.5px;
+}
+
+.hticks,
+.hlegend {
+    position: relative;
+}
+
+.hticks {
+    margin-top: -3px;
+    margin-bottom: 5px;
+}
+
+#nulls {
+    margin-top: 10px;
 }
