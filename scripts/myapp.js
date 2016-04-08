@@ -1,347 +1,262 @@
+/*
+
+
+Si non confectus, non reficiat
+
+
+*/
 'use strict';
 (function () {
 
     window.myapp = window.myapp || {};
 
     var init = function () {
+            cdb.$('.myloader').addClass('is-visible');
             window.myapp.fields = document.querySelector('.leftpanel').querySelectorAll('input');
             getScaleParams();
-            getSQL();
             goMap(function () {
+                setQuery();
+                getColors();
                 getDataparams(function () {
                     getScaleParams();
-                    getSQL();
-                    buildScales();
-                    setCSS(scaleindex);
-                    setQuery();
-                    setEvents();
+                    getQuants(function () {
+                        buildScales();
+                        setCSS(scaleindex);
+                        setEvents();
+                    });
                 });
             });
         },
         scaleindex = 0,
         getScaleParams = function () {
-            window.myapp.fields[0].value = window.myapp.fields[0].value.replace('api/v2/','api/v3/');
+            var getSQL = function () {
+                    var viz = window.myapp.params.viz,
+                        i0 = (viz.indexOf('/u/') > 0) ? viz.indexOf('/u/') + 3 : viz.indexOf('://') + 3,
+                        i1 = (viz.indexOf('/u/') > 0) ? viz.indexOf('/', i0 + 3) : viz.indexOf('.cartodb.com/', i0);
+                    return new cartodb.SQL({
+                        user: viz.substring(i0, i1)
+                    });
+                },
+                ff = window.myapp.fields;
+            ff[0].value = ff[0].value.replace('api/v2/', 'api/v3/');
             try {
                 window.myapp.params = {
-                    viz: window.myapp.fields[0].value,
-                    layername: window.myapp.fields[1].value,
-                    fieldname: window.myapp.fields[2].value,
+                    viz: ff[0].value,
+                    layername: ff[1].value,
+                    fieldname: ff[2].value,
                     fieldtype: document.querySelector('select').value,
-                    scale: window.myapp.fields[3].value.replace('[', '').replace(']', '').replace(/\"/g, '').replace(/\'/g, '').replace(/\s+/g, '').split(','),
-                    steps: window.myapp.fields[4].value * 1,
-                    min: window.myapp.fields[5].value * 1,
-                    poi: window.myapp.fields[6].value * 1,
-                    max: window.myapp.fields[7].value * 1,
-                    bezier: window.myapp.fields[8].checked,
-                    luminfix: window.myapp.fields[9].checked
+                    scale: ff[3].value.replace('[', '').replace(']', '').replace(/\"/g, '').replace(/\'/g, '').replace(/\s+/g, '').split(','),
+                    steps: ff[4].value * 1,
+                    min: ff[5].value * 1,
+                    poi: ff[6].value * 1,
+                    max: ff[7].value * 1,
+                    bezier: ff[8].checked,
+                    luminfix: ff[9].checked
                 };
-                logscale();
+                window.myapp.params.sql = getSQL();
                 return false;
             } catch (error) {
+                cdb.$('.myloader').removeClass('is-visible');
+                debugger;
                 return true;
             }
-        },
-        getSQL = function () {
-            var viz = window.myapp.params.viz,
-                i0 = (viz.indexOf('/u/') > 0) ? viz.indexOf('/u/') + 3 : viz.indexOf('://') + 3,
-                i1 = (viz.indexOf('/u/') > 0) ? viz.indexOf('/', i0 + 3) : viz.indexOf('.cartodb.com/', i0);
-            window.myapp.params.sql = new cartodb.SQL({
-                user: viz.substring(i0, i1)
-                    //user:'andrew'
-            });
         },
         getDataparams = function (callback) {
             window.myapp.params.sql.execute('with b as(' + window.myapp.layer.attributes.sql + ') select GeometryType(the_geom_webmercator) as type from b limit 1').done(function (data) {
-                var field = window.myapp.fields[2].value;
-                document.querySelector('select').value = data.rows[0].type.toLowerCase().replace('multi','');
-                window.myapp.params.sql.execute('with a as(' + window.myapp.layer.attributes.sql + '), b as (select ' + field + '::integer as mo from a group by ' + field + '::integer order by count(*) desc limit 1), c as (select min(a.' + field + ') as mn, max(a.' + field + ') as mx from a) select * from b,c').done(function (data) {
-                    window.myapp.fields[5].value = data.rows[0].mn;
-                    window.myapp.fields[6].value = data.rows[0].mo;
-                    window.myapp.fields[7].value = data.rows[0].mx;
-                    callback();
+                var field = window.myapp.fields[2].value,
+                    buckets = 50,
+                    query = 'with a as(' + window.myapp.layer.attributes.sql + '), c as ( select min(a.' + field + ') as mn, max(a.' + field + ') as mx from a ), d as( select width_bucket(a.' + field + ', c.mn, c.mx, ' + (buckets - 1) + ') as bucket, count(*) as freq, min(a.' + field + ')+0.5*(max(a.' + field + ') - min(a.' + field + ')) as avg from a, c group by 1 order by 1 ), e as( select array_agg(avg) as avg, array_agg(d.bucket) as bucket, array_agg(d.freq) as freq from d ) select * from c,e';
+                document.querySelector('select').value = data.rows[0].type.toLowerCase().replace('multi', '');
+                window.myapp.params.sql.execute(query).done(function (data) {
+                    var dr = data.rows[0];
+                    window.myapp.fields[5].value = dr.mn;
+                    window.myapp.fields[6].value = dr.avg[dr.freq.indexOf(Math.max.apply(null, dr.freq))];
+                    window.myapp.fields[7].value = dr.mx;
+                    setHisto(dr, buckets);
+                    cdb.$('.myloader:eq(0)').removeClass('is-visible');
+                    if (getScaleParams()) return;
+                    getQuants(callback);
                 }).error(function (errors) {
-                    console.log(errors);
+                    cdb.$('.myloader').removeClass('is-visible');
                 });
             })
         },
-        calcLog = function (ramp) {
-            var step,
-                steps = [];
-            for (var b = 0; b < ramp + 1; b++) {
-                step = b * 100 / ramp;
-                step = (step == 0) ? 0 : Math.log(step) * 100 / Math.log(100);
-                steps.push(step);
-            }
-            return steps;
-        },
-        logscale = function () {
-            window.myapp.params.stepsLog = calcLog(window.myapp.fields[4].value * 1);
-        },
-        buildScales = function () {
+        getColors = function () {
             try {
                 var p = window.myapp.params,
-                    layername = p.layername,
-                    fieldname = p.fieldname,
-                    fieldtype = p.fieldtype,
-                    s = document.querySelectorAll('.scale'),
-                    c = document.querySelectorAll('.chart'),
-                    t,
-                    d,
-                    f,
-                    tmp,
-                    h0 = s[0].scrollHeight,
-                    w0 = s[0].scrollWidth,
-                    w,
-                    colorscale = (p.bezier === true) ? chroma.bezier(p.scale).scale().mode('lab').correctLightness(p.luminfix) : chroma.scale(p.scale).mode('lab').correctLightness(p.luminfix),
-                    colors = colorscale.colors(p.steps),
-                    colorstext,
-                    ramp0, ramp1, logscale, center,
-                    cssheader = '\n#' + layername + '{\n	' + fieldtype + '-opacity: 1;';
-
-                window.myapp.cartocss = [];
-
+                    colors0,
+                    colorscale,
+                    colors,
+                    rr;
+                colors0 = (p.scale.length > 5) ? chroma.scale(p.scale).mode('lab').correctLightness(p.luminfix).colors(5) : p.scale;
+                colorscale = (p.bezier === true) ? chroma.bezier(colors0).scale().mode('lab').correctLightness(p.luminfix) : chroma.scale(p.scale).mode('lab').correctLightness(p.luminfix);
+                colors = colorscale.colors(p.steps);
+                window.myapp.colorscale = colorscale;
+                rr = window.myapp.ramps = window.myapp.ramps || {};
+                rr.original = window.myapp.params.scale;
+                rr.interpolated = colors;
+                rr.stddev = (window.myapp.quants != void 0) ? colorscale.colors(window.myapp.quants.stddev.length) : [];
                 setScale(colors);
-
-                cdb.$('.myloader').removeClass('is-visible');
-
-                //original:
-                cdb.$('.myloader:eq(0)').toggleClass('is-visible');
-                t = '';
-                d = '';
-                window.myapp.cartocss[0] = '/** Original scale */\n\n' + p.scale.map(function(a,b){return '@color'+b+': '+a+';\n'}).join('');
-                window.myapp.cartocss[0] += '\n' + cssheader + '\n	' + fieldtype + '-fill: @color0;';
-                w = 100 / p.scale.length;
-                f = 0;
-                for (var i = 0; i < p.scale.length; i++) {
-                    t += '<div style="height:' + h0 + 'px;width:' + w + '%;background:' + p.scale[i] + ';" title="' + p.scale[i] + '"></div>';
-                    d += '<div class="chartblock" style="height:' + chroma(p.scale[i]).lab()[0] + 'px;width:' + w + '%;"></div>';
-                    window.myapp.cartocss[0] += '\n	[' + fieldname + '>' + (p.min + f * (p.max - p.min) / 100) + ']{\n		' + fieldtype + '-fill: @color' +i + ';\n       }';
-                    f += w;
-                }
-                s[0].innerHTML = t;
-                c[0].innerHTML = d;
-                window.myapp.cartocss[0] += '\n}';
-                cdb.$('.myloader:eq(0)').toggleClass('is-visible');
-
-                //linear
-                cdb.$('.myloader:eq(1)').toggleClass('is-visible');
-                t = '';
-                d = '';
-                window.myapp.cartocss[1] = '/** Linear scale */\n\n' + colors.map(function(a,b){return '@color'+b+': '+a+';\n'}).join('');
-                window.myapp.cartocss[1] += cssheader + '\n        ' + fieldtype + '-fill: @color0;';
-                w = 100 / p.steps;
-                f = 0;
-                for (var i = 0; i < colors.length; i++) {
-                    t += '<div style="height:' + h0 + 'px;width:' + w + '%;background:' + colors[i] + ';" title="' + colors[i] + '"></div>';
-                    d += '<div class="chartblock" style="height:' + chroma(colors[i]).lab()[0] + 'px;width:' + w + '%;"></div>';
-                    window.myapp.cartocss[1] += '\n	[' + fieldname + '>' + (p.min + f * (p.max - p.min) / 100) + ']{\n		' + fieldtype + '-fill: @color' + i + ';\n        }';
-                    f += w;
-                }
-                s[1].innerHTML = t;
-                c[1].innerHTML = d;
-                window.myapp.cartocss[1] += '\n}';
-                cdb.$('.myloader:eq(1)').toggleClass('is-visible');
-
-                //logstart
-                cdb.$('.myloader:eq(2)').toggleClass('is-visible');
-                t = '';
-                d = '';
-                f = 0;
-                window.myapp.cartocss[2] = '/** Log start scale */\n\n' + colors.map(function(a,b){return '@color'+b+': '+a+';\n'}).join('');
-                window.myapp.cartocss[2] += cssheader + '\n        ' + fieldtype + '-fill: @color0;';
-                for (var i = 0; i < colors.length; i++) {
-                    w = window.myapp.params.stepsLog[colors.length - i] - window.myapp.params.stepsLog[colors.length - i - 1];
-                    t += '<div style="height:' + h0 + 'px;width:' + w + '%;background:' + colors[i] + ';" title="' + colors[i] + '"></div>';
-                    d += '<div class="chartblock" style="height:' + chroma(colors[i]).lab()[0] + 'px;width:' + w + '%;"></div>';
-                    window.myapp.cartocss[2] += '\n	[' + fieldname + '>' + (p.min + f * (p.max - p.min) / 100) + ']{\n		' + fieldtype + '-fill: @color' + i + ';\n        }';
-                    f += w;
-                }
-                s[2].innerHTML = t;
-                c[2].innerHTML = d;
-                window.myapp.cartocss[2] += '\n}';
-                cdb.$('.myloader:eq(2)').toggleClass('is-visible');
-
-                //logend
-                cdb.$('.myloader:eq(3)').toggleClass('is-visible');
-                t = '';
-                d = '';
-                f = 0;
-                window.myapp.cartocss[3] = '/** Log end scale */\n\n' + colors.map(function(a,b){return '@color'+b+': '+a+';\n'}).join('');
-                window.myapp.cartocss[3] += cssheader + '\n         ' + fieldtype + '-fill: @color0;';
-                for (var i = 0; i < colors.length; i++) {
-                    w = window.myapp.params.stepsLog[i + 1] - window.myapp.params.stepsLog[i];
-                    t += '<div style="height:' + h0 + 'px;width:' + w + '%;background:' + colors[i] + ';" title="' + colors[i] + '"></div>';
-                    d += '<div class="chartblock" style="height:' + chroma(colors[i]).lab()[0] + 'px;width:' + w + '%;"></div>';
-                    window.myapp.cartocss[3] += '\n	[' + fieldname + '>' + (p.min + f * (p.max - p.min) / 100) + ']{\n		' + fieldtype + '-fill: @color' + i + ';\n        }';
-                    f += w;
-                }
-                s[3].innerHTML = t;
-                c[3].innerHTML = d;
-                window.myapp.cartocss[3] += '\n}';
-                cdb.$('.myloader:eq(3)').toggleClass('is-visible');
-
-                //log center
-                cdb.$('.myloader:eq(4)').toggleClass('is-visible');
-                t = '';
-                d = '';
-                f = 0;
-                tmp = Math.floor(colors.length / 2);
-                ramp0 = (colors.length % 2 == 0) ? colors.slice(0, tmp) : colors.slice(0, tmp + 1);
-                ramp1 = colors.slice(tmp);
-                logscale = calcLog(ramp0.length);
-                window.myapp.cartocss[4] = '/** Log centered scale */\n\n' + colors.map(function(a,b){return '@color'+b+': '+a+';\n'}).join('');
-                window.myapp.cartocss[4] += cssheader + '\n	' + fieldtype + '-fill: @color0;';
-                for (var i = 0; i < ramp0.length; i++) {
-                    w = logscale[i + 1] - logscale[i];
-                    t += '<div style="height:' + h0 + 'px;width:' + w / 2 + '%;background:' + ramp0[i] + ';" title="' + ramp0[i] + '"></div>';
-                    d += '<div class="chartblock" style="height:' + chroma(ramp0[i]).lab()[0] + 'px;width:' + w / 2 + '%;"></div>';
-                    window.myapp.cartocss[4] += '\n	[' + fieldname + '>' + (p.min + f * (p.max - p.min) / 100) + ']{\n		' + fieldtype + '-fill: @color' + i + ';\n         }';
-                    f += w / 2;
-                }
-                for (var i = 0; i < ramp1.length; i++) {
-                    w = logscale[ramp0.length - i] - logscale[ramp0.length - i - 1];
-                    t += '<div style="height:' + h0 + 'px;width:' + w / 2 + '%;background:' + ramp1[i] + ';" title="' + ramp1[i] + '"></div>';
-                    d += '<div class="chartblock" style="height:' + chroma(ramp1[i]).lab()[0] + 'px;width:' + w / 2 + '%;"></div>';
-                    window.myapp.cartocss[4] += '\n	[' + fieldname + '>' + (p.min + f * (p.max - p.min) / 100) + ']{\n		' + fieldtype + '-fill: @color' + (i+ramp0.length-1) + ';\n         }';
-                    f += w / 2;
-                }
-                s[4].innerHTML = t;
-                c[4].innerHTML = d;
-                window.myapp.cartocss[4] += '\n}';
-                cdb.$('.myloader:eq(4)').toggleClass('is-visible');
-
-                //log shifted
-                cdb.$('.myloader:eq(5)').toggleClass('is-visible');
-                t = '';
-                d = '';
-                f = 0;
-                window.myapp.cartocss[5] = '/** Log shifted scale */\n\n' + colors.map(function(a,b){return '@color'+b+': '+a+';\n'}).join('');
-                window.myapp.cartocss[5] += cssheader + '\n	' + fieldtype + '-fill: @color0;';
-                center = (p.poi - p.min) / (p.max - p.min);
-                for (var i = 0; i < ramp0.length; i++) {
-                    w = logscale[i + 1] - logscale[i];
-                    t += '<div style="height:' + h0 + 'px;width:' + w * center + '%;background:' + ramp0[i] + ';" title="' + ramp0[i] + '"></div>';
-                    d += '<div class="chartblock" style="height:' + chroma(ramp0[i]).lab()[0] + 'px;width:' + w * center + '%;"></div>';
-                    window.myapp.cartocss[5] += '\n	[' + fieldname + '>' + (p.min + f * (p.max - p.min) / 100) + ']{\n		' + fieldtype + '-fill: @color' + i + ';\n         }';
-                    f += w * center;
-                }
-                for (var i = 0; i < ramp1.length; i++) {
-                    w = logscale[ramp0.length - i] - logscale[ramp0.length - i - 1];
-                    t += '<div style="height:' + h0 + 'px;width:' + w * (1 - center) + '%;background:' + ramp1[i] + ';" title="' + ramp1[i] + '"></div>';
-                    d += '<div class="chartblock" style="height:' + chroma(ramp1[i]).lab()[0] + 'px;width:' + w * (1 - center) + '%;"></div>';
-                    window.myapp.cartocss[5] += '\n	[' + fieldname + '>' + (p.min + f * (p.max - p.min) / 100) + ']{\n		' + fieldtype + '-fill: @color' + (i+ramp0.length-1) + ';\n         }';
-                    f += w * (1 - center);
-                }
-                s[5].innerHTML = t;
-                c[5].innerHTML = d;
-                window.myapp.cartocss[5] += '\n}';
-                cdb.$('.myloader:eq(5)').toggleClass('is-visible');
-
-                // n-tiles & jenks
-                // https://github.com/CartoDB/cartodb-postgresql/tree/master/doc
-                cdb.$('.myloader:eq(6)').toggleClass('is-visible');
-                cdb.$('.myloader:eq(7)').toggleClass('is-visible');
-                window.myapp.params.sql.execute('with b as(' + window.myapp.layer.attributes.sql + ') select CDB_QuantileBins(array_agg(' + fieldname + '::numeric), ' + window.myapp.params.steps + ') as ntile, CDB_JenksBins(array_agg(' + fieldname + '::numeric), ' + window.myapp.params.steps + ') as jenks from b').done(function (data) {
-                    window.myapp.params.stepsntile = data.rows[0].ntile;
-                    window.myapp.params.stepsjenks = data.rows[0].jenks.filter(function (a) {
-                        return a != null
-                    });
-                    window.myapp.params.stepsntile.unshift(0);
-                    window.myapp.params.stepsjenks.unshift(0);
-                    t = '';
-                    d = '';
-                    f = 0;
-                    window.myapp.cartocss[6] = '/** n-tile scale */\n\n' + colors.map(function(a,b){return '@color'+b+': '+a+';\n'}).join('');
-                    window.myapp.cartocss[6] += cssheader + '\n         ' + fieldtype + '-fill: @color0;';
-                    for (var i = 0; i < colors.length; i++) {
-                        w = 100 * (window.myapp.params.stepsntile[i + 1] - window.myapp.params.stepsntile[i]) / (window.myapp.params.stepsntile[colors.length] - window.myapp.params.stepsntile[0]);
-                        t += '<div style="height:' + h0 + 'px;width:' + w + '%;background:' + colors[i] + ';" title="' + colors[i] + '"></div>';
-                        d += '<div class="chartblock" style="height:' + chroma(colors[i]).lab()[0] + 'px;width:' + w + '%;"></div>';
-                        window.myapp.cartocss[6] += '\n	[' + fieldname + '>' + window.myapp.params.stepsntile[i] + ']{\n		' + fieldtype + '-fill: @color' + i + ';\n        }';
-                        f += w;
+            } catch (errors) { /* do nothing */ }
+        },
+        getQuants = function (callback) {
+            var p = window.myapp.params,
+                r = window.myapp.ramps,
+                f = Array.apply(null, new Array(99)).map(Number.prototype.valueOf, 0),
+                count = 0,
+                delta = function (f) {
+                    return p.min + f * (p.max - p.min) / 100;
+                },
+                calcLog = function (ramp) {
+                    var step,
+                        steps = [];
+                    for (var b = 0; b < ramp + 1; b++) {
+                        step = b * 100 / ramp;
+                        step = (step == 0) ? 0 : Math.log(step) * 100 / Math.log(100);
+                        steps.push(step);
                     }
-                    s[6].innerHTML = t;
-                    c[6].innerHTML = d;
-                    window.myapp.cartocss[6] += '\n}';
-                    cdb.$('.myloader:eq(6)').toggleClass('is-visible');
-
-                    t = '';
-                    d = '';
-                    f = 0;
-                    window.myapp.cartocss[7] = '/** Jenks scale */\n\n' + colors.map(function(a,b){return '@color'+b+': '+a+';\n'}).join('');
-                    window.myapp.cartocss[7] += cssheader + '\n         ' + fieldtype + '-fill: @color0;';
-                    for (var i = 0; i < window.myapp.params.stepsjenks.length; i++) {
-                        w = 100 * (window.myapp.params.stepsjenks[i + 1] - window.myapp.params.stepsjenks[i]) / (window.myapp.params.stepsjenks[window.myapp.params.stepsjenks.length - 1] - window.myapp.params.stepsjenks[0]);
-                        t += '<div style="height:' + h0 + 'px;width:' + w + '%;background:' + colors[i] + ';" title="' + colors[i] + '"></div>';
-                        d += '<div class="chartblock" style="height:' + chroma(colors[i]).lab()[0] + 'px;width:' + w + '%;"></div>';
-                        window.myapp.cartocss[7] += '\n	[' + fieldname + '>' + window.myapp.params.stepsjenks[i] + ']{\n		' + fieldtype + '-fill: @color' + i + ';\n        }';
-                        f += w;
-                    }
-                    s[7].innerHTML = t;
-                    c[7].innerHTML = d;
-                    window.myapp.cartocss[7] += '\n}';
-                    cdb.$('.myloader:eq(7)').toggleClass('is-visible');
-                }).error(function (errors) {
-                    cdb.$('.myloader:eq(6)').toggleClass('is-visible');
-                    cdb.$('.myloader:eq(7)').toggleClass('is-visible');
-                });
-
-                // stddev
-                // https://gist.github.com/ohasselblad/f00953760fc63b60c1a9d3a90748ac61
-                // http://gennick.com/database/stddev-standing-sentinel-on-your-data
-                /*
-                with a as(
-                  SELECT *,100.0*t2_2::float/t1_1::float as women FROM andrew.spain_census2011
-                ),
-                b as(
-                select
-                    women,
-                    TRUNC(
-                          (AVG(women) - AVG(AVG(women)) OVER ()) / trunc((STDDEV(AVG(women)) OVER ())::numeric, 5)
-                    ) AS Bucket
-                from a
-                group by women
-                  ),
-                c as(
-                select
-                max(women) as mx
-                from b
-                group by bucket order by bucket
-                )
-                select array_agg(mx) from c
-                */
-                cdb.$('.myloader:eq(8)').toggleClass('is-visible');
-                window.myapp.params.sql.execute('with a as(' + window.myapp.layer.attributes.sql + '), b as( select ' + fieldname + ', TRUNC((AVG(' + fieldname + ') - AVG(AVG(' + fieldname + ')) OVER ()) / trunc((STDDEV(AVG(' + fieldname + ')) OVER ())::numeric, 5) ) AS Bucket from a group by ' + fieldname + ' ), c as( select max(' + fieldname + ') as mx from b group by bucket order by bucket ) select array_agg(mx) as stdev from c').done(function (data) {
-                    window.myapp.params.stepstdev = data.rows[0].stdev.filter(function (a) {
-                        return a != null
-                    });
-                    var colors2 = colorscale.colors(window.myapp.params.stepstdev.length);
-                    t = '';
-                    d = '';
-                    f = 0;
-                    window.myapp.cartocss[8] = '/** StdDev scale */\n\n' + colors2.map(function(a,b){return '@color'+b+': '+a+';\n'}).join('');
-                    window.myapp.cartocss[8] += cssheader + '\n         ' + fieldtype + '-fill: @color0;';
-                    for (var i = 0; i < window.myapp.params.stepstdev.length; i++) {
-                        w = 100 * (window.myapp.params.stepstdev[i + 1] - window.myapp.params.stepstdev[i]) / (window.myapp.params.stepstdev[window.myapp.params.stepstdev.length - 1] - window.myapp.params.stepstdev[0]);
-                        t += '<div style="height:' + h0 + 'px;width:' + w + '%;background:' + colors2[i] + ';" title="' + colors2[i] + '"></div>';
-                        d += '<div class="chartblock" style="height:' + chroma(colors2[i]).lab()[0] + 'px;width:' + w + '%;"></div>';
-                        window.myapp.cartocss[8] += '\n	[' + fieldname + '>' + window.myapp.params.stepstdev[i] + ']{\n		' + fieldtype + '-fill: @color' + i + ';\n        }';
-                        f += w;
-                    }
-                    s[8].innerHTML = t;
-                    c[8].innerHTML = d;
-                    window.myapp.cartocss[8] += '\n}';
-                    cdb.$('.myloader:eq(8)').toggleClass('is-visible');
-                }).error(function (errors) {
-                    cdb.$('.myloader:eq(8)').toggleClass('is-visible');
-                });
-
-                return false;
-            } catch (error) {
-                return true;
-                console.log('buildScales error: ' + error);
+                    return steps;
+                },
+                log = calcLog(p.steps),
+                log0,
+                c = [],
+                tmp,
+                mq;
+            mq = window.myapp.quants = window.myapp.quants || {};
+            mq.original = [];
+            for (var i = 0; i < r.original.length; i++) {
+                mq.original[i] = delta(f[0]);
+                f[0] += 100 / r.original.length;
             }
+            mq.interpolated = [];
+            mq.logstart = [];
+            mq.logend = [];
+            for (var i = 0; i < r.interpolated.length; i++) {
+                mq.interpolated[i] = delta(f[1]);
+                f[1] += 100 / r.interpolated.length;
+                mq.logstart[i] = delta(f[2]);
+                f[2] += log[r.interpolated.length - i] - log[r.interpolated.length - i - 1];
+                mq.logend[i] = delta(f[3]);
+                f[3] += log[i + 1] - log[i];
+            }
+            mq.logcenter = [];
+            mq.logshifted = [];
+            tmp = Math.floor(r.interpolated.length / 2);
+            c[0] = (p.poi - p.min) / (p.max - p.min);
+            c[1] = (r.interpolated.length % 2 == 0) ? r.interpolated.slice(0, tmp).length : r.interpolated.slice(0, tmp + 1).length;
+            c[2] = r.interpolated.slice(tmp).length;
+            log0 = calcLog(c[1]);
+            for (var i = 0; i < c[1]; i++) {
+                mq.logcenter[i] = delta(f[4]);
+                f[4] += 0.5 * (log0[i + 1] - log0[i]);
+                mq.logshifted[i] = delta(f[5]);
+                f[5] += c[0] * (log0[i + 1] - log0[i]);
+            }
+            for (var i = 0; i < c[2]; i++) {
+                mq.logcenter[i + c[1] - 1] = delta(f[4]);
+                f[4] += 0.5 * (log0[c[1] - i] - log0[c[1] - i - 1]);
+                mq.logshifted[i + c[1] - 1] = delta(f[5]);
+                f[5] += (1 - c[0]) * (log0[c[1] - i] - log0[c[1] - i - 1]);
+            }
+            p.sql.execute('with b as(' + window.myapp.layer.attributes.sql + ') select CDB_QuantileBins(array_agg(' + p.fieldname + '::numeric), ' + p.steps + ') as ntile, CDB_JenksBins(array_agg(' + p.fieldname + '::numeric), ' + p.steps + ') as jenks from b').done(function (data) {
+                mq.ntiles = data.rows[0].ntile;
+                mq.jenks = data.rows[0].jenks.filter(function (a) {
+                    return a != null
+                });
+                mq.ntiles.unshift(0);
+                mq.jenks.unshift(0);
+                count += 1;
+                if (count >= 2) callback();
+            });
+            p.sql.execute('with a as(' + window.myapp.layer.attributes.sql + '), b as( select ' + p.fieldname + ', TRUNC((AVG(' + p.fieldname + ') - AVG(AVG(' + p.fieldname + ')) OVER ()) / trunc((STDDEV(AVG(' + p.fieldname + ')) OVER ())::numeric, 5) ) AS Bucket from a group by ' + p.fieldname + ' ), c as( select max(' + p.fieldname + ') as mx from b group by bucket order by bucket ) select array_agg(mx) as stdev from c').done(function (data) {
+                mq.stddev = data.rows[0].stdev.filter(function (a) {
+                    return a != null
+                });
+                window.myapp.ramps.stddev = window.myapp.colorscale.colors(mq.stddev.length);
+                count += 1;
+                if (count >= 2) callback();
+            })
 
+        },
+        buildScales = function () {
+            var
+                p = window.myapp.params,
+                r = window.myapp.ramps,
+                q = window.myapp.quants,
+                s = document.querySelectorAll('.scale'),
+                c = document.querySelectorAll('.chart'),
+                h0 = s[0].scrollHeight,
+                w0 = s[0].scrollWidth,
+                f,
+                t = [],
+                d = [],
+                names = ['Original scale', 'Interpolated scale', 'Log-start scale', 'Log-end scale', 'Log-center scale', 'Log shifted to POI scale', 'n-tile scale', 'Jenks scale', 'StdDev scale'],
+                tfun = function (ii, rr, ww) {
+                    return '<div style="height:' + h0 + 'px;width:' + ww + '%;background:' + rr[ii] + ';" title="' + rr[ii] + '"></div>'
+                },
+                dfun = function (ii, rr, ww) {
+                    return '<div class="chartblock" style="height:' + chroma(rr[ii]).lab()[0] + 'px;width:' + ww + '%;"></div>'
+                },
+                cfun = function (ii, qq) {
+                    return '\n	[' + p.fieldname + '>' + qq[ii] + ']{\n		' + p.fieldtype + '-fill: @color' + ii + ';\n       }';
+                },
+                wfun = function (ii, qq) {
+                    var h = qq[i + 1] || p.max;
+                    return 100 * (h - qq[ii]) / (qq[qq.length - 1] - qq[0]);
+                },
+                fullfun = function (jj, ii, rr, qq, ww) {
+                    var ww = ww || wfun(ii, qq);
+                    t[jj] = t[jj] || '';
+                    t[jj] += tfun(ii, rr, ww);
+                    d[jj] = d[jj] || '';
+                    d[jj] += dfun(ii, rr, ww);
+                    window.myapp.cartocss[jj] += cfun(ii, qq);
+                },
+                initcss = function (jj, rr) {
+                    window.myapp.cartocss[jj] = '/** ' + names[jj] + ' */\n\n' + rr.map(function (a, b) {
+                        return '@color' + b + ': ' + a + ';\n'
+                    }).join('');
+                    window.myapp.cartocss[jj] += '\n#' + p.layername + '{\n	' + p.fieldtype + '-opacity: 1;\n	' + p.fieldtype + '-fill: @color0;';
+                };
+            window.myapp.cartocss = [];
+            try {
+                initcss(0, r.original);
+                initcss(1, r.interpolated);
+                initcss(2, r.interpolated);
+                initcss(3, r.interpolated);
+                initcss(4, r.interpolated);
+                initcss(5, r.interpolated);
+                initcss(6, r.interpolated);
+                initcss(7, r.interpolated);
+                initcss(8, r.stddev);
+                for (var i = 0; i < r.original.length; i++) {
+                    fullfun(0, i, r.original, q.original, 100 / r.original.length);
+                }
+                for (var i = 0; i < r.interpolated.length; i++) {
+                    fullfun(1, i, r.interpolated, q.interpolated, 100 / r.interpolated.length);
+                    fullfun(2, i, r.interpolated, q.logstart);
+                    fullfun(3, i, r.interpolated, q.logend);
+                    fullfun(4, i, r.interpolated, q.logcenter);
+                    fullfun(5, i, r.interpolated, q.logshifted);
+                    fullfun(6, i, r.interpolated, q.ntiles);
+                    fullfun(7, i, r.interpolated, q.jenks);
+                }
+                for (var i = 0; i < r.stddev.length; i++) {
+                    fullfun(8, i, r.stddev, q.stddev);
+                }
+                window.myapp.cartocss = window.myapp.cartocss.map(function (a) {
+                    return a += '\n}';
+                });
+                for (var i = 0; i < 9; i++) {
+                    s[i].innerHTML = t[i];
+                    c[i].innerHTML = d[i];
+                    cdb.$('.myloader:eq(' + (i + 1) + ')').removeClass('is-visible');
+                }
+
+            } catch (errors) {
+                cdb.$('.myloader').removeClass('is-visible');
+                debugger;
+            }
         },
         escapeHtml = function (text) {
             var map = {
@@ -355,14 +270,46 @@
                 return map[m];
             });
         },
+        setHisto = function (data, c /*b, f, c, max, min, poi*/ ) {
+            var h = document.querySelector('.histo'),
+                n = document.querySelector('#nulls'),
+                l = document.querySelector('.hlegend'),
+                t = document.querySelector('.hticks'),
+                f = data.freq,
+                b = data.bucket,
+                solid = Array.apply(null, Array(c)).map(Number.prototype.valueOf, 0),
+                max = Math.max.apply(null, f),
+                mode = data.avg[data.freq.indexOf(Math.max.apply(null, data.freq))],
+                mi,
+                alt,
+                margin,
+                ihtml = '',
+                fxn = function (a) {
+                    return (a - Math.floor(a) > 0) ? a.toFixed(2) : a + '';
+                };
+            for (var i = 0; i < b.length; i++) {
+                solid[b[i] - 1] = f[i];
+            }
+            mi = solid.indexOf(Math.max.apply(null, data.freq));
+            margin = mi * h.scrollWidth / c;
+            for (var i = 0; i < c; i++) {
+                alt = 100 * solid[i] / max;
+                ihtml += '<div class="histoblock" style="height:' + alt + '%;width:' + (100 / c) + '%;" title="avg: '+fxn(data.avg[data.freq.indexOf(solid[i])])+'  |  freq: '+solid[i]+'"></div>'
+            }
+            h.innerHTML = ihtml;
+            n.innerHTML = (solid[-1] == void 0) ? '0 null values' : solid[-1] + ' null values';
+            t.innerHTML = '<span>|</span><span style="position:absolute;left:' + margin + 'px;">|</span><span style="float: right;">|</span>';
+            l.innerHTML = '<span>' + fxn(data.mn) + '</span><span style="position:absolute;left:' + (margin - 5) + 'px;">' + fxn(mode) + '</span><span style="float: right;">' + fxn(data.mx) + '</span>';
+        },
         setCSS = function (index) {
             var pre = cdb.L.DomUtil.create('pre', 'prettyprint lang-css');
             window.myapp.layer.set('cartocss', myapp.cartocss[index]);
             pre.id = 'cartocss';
             pre.innerHTML = escapeHtml(myapp.cartocss[index]);
-            document.querySelector('.cartobox').innerHTML = '';
-            document.querySelector('.cartobox').appendChild(pre);
+            document.querySelector('.mycss').innerHTML = '';
+            document.querySelector('.mycss').appendChild(pre);
             prettyPrint();
+            cdb.$('.myloader:eq(10)').removeClass('is-visible');
         },
         setQuery = function () {
             var pre = cdb.L.DomUtil.create('pre', 'prettyprint lang-sql');
@@ -393,55 +340,71 @@
                 callback();
             });
         },
-        changes = function () {
-            if (getScaleParams()) return;
-            getSQL();
-            if (buildScales()) return;
-            setCSS(scaleindex);
-            setQuery();
-        },
-        changes2 = function () {
-            getSQL();
-            getDataparams(function () {
-                if (getScaleParams()) return;
-                getSQL();
-                if (buildScales()) return;
-                setCSS(scaleindex);
-            });
-        },
         setEvents = function () {
-            // block 0
-            window.myapp.fields[0].onkeyup = init;
-            window.myapp.fields[1].onkeyup = changes;
-            window.myapp.fields[2].onkeyup = changes2;
-            // block 1
-            window.myapp.fields[3].onkeyup = changes;
-            window.myapp.fields[4].onchange = window.myapp.fields[4].onkeyup = changes;
-            // block 2
-            window.myapp.fields[5].onchange = window.myapp.fields[5].onkeyup = changes;
-            window.myapp.fields[6].onchange = window.myapp.fields[6].onkeyup = function () {
+            var ff = window.myapp.fields,
+                change_field = function () {
+                    cdb.$('.myloader').addClass('is-visible');
+                    if (getScaleParams()) return;
+                    getDataparams(function () {
+                        buildScales();
+                        setCSS(scaleindex);
+                        setQuery();
+                    });
+                },
+                change_colors = function () {
+                    cdb.$('.myloader').addClass('is-visible');
+                    cdb.$('.myloader:eq(0)').removeClass('is-visible');
+                    if (getScaleParams()) return;
+                    getColors();
+                    getQuants(function () {
+                        buildScales();
+                        setCSS(scaleindex);
+                    });
+                },
+                change_limits = function () {
+                    cdb.$('.myloader').addClass('is-visible');
+                    cdb.$('.myloader:eq(0)').removeClass('is-visible');
+                    if (getScaleParams()) return;
+                    getQuants(function () {
+                        buildScales();
+                        setCSS(scaleindex);
+                    });
+                },
+                change_colorspars = function () {
+                    cdb.$('.myloader').addClass('is-visible');
+                    cdb.$('.myloader:eq(0)').removeClass('is-visible');
+                    if (getScaleParams()) return;
+                    getColors();
+                    buildScales();
+                    setCSS(scaleindex);
+                },
+                change_geom = function () {
+                    cdb.$('.myloader').addClass('is-visible');
+                    cdb.$('.myloader:eq(0)').removeClass('is-visible');
+                    if (getScaleParams()) return;
+                    buildScales();
+                    setCSS(scaleindex);
+                };
+            ff[0].onkeyup = init;
+            ff[1].onkeyup = change_field;
+            ff[2].onkeyup = change_field;
+            ff[3].onkeyup = change_colors;
+            ff[4].onchange = ff[4].onkeyup = change_colors;
+            ff[5].onchange = ff[5].onkeyup = change_limits;
+            ff[6].onchange = ff[6].onkeyup = function () {
                 if (getScaleParams()) return;
                 if (this.value < window.myapp.params.min || this.value > window.myapp.params.max) {
-                    alert('The POI value must be within the boundaries');
                     return;
                 }
-                if (buildScales()) return;
-                setCSS(scaleindex);
+                change_limits();
             };
-            window.myapp.fields[7].onchange = window.myapp.fields[7].onkeyup = changes;
-            // block 3
-            cdb.$('input[type=checkbox]').on('change', function () {
-                window.myapp.params.bezier = document.querySelector('input[value=bezier]').checked;
-                window.myapp.params.luminfix = document.querySelector('input[value=luminfix]').checked;
-                if (buildScales()) return;
-                setCSS(scaleindex);
-            });
-            // scales selection
+            ff[7].onchange = ff[7].onkeyup = change_limits;
+            cdb.$('input[type=checkbox]').on('change', change_colorspars);
             cdb.$('input[type=radio]').on('change', function () {
                 scaleindex = document.querySelector('input[type=radio]:checked').value;
                 setCSS(scaleindex);
             })
-            cdb.$('select').on('change', changes);
+            cdb.$('select').on('change', change_geom);
         };
 
     window.onload = init;
