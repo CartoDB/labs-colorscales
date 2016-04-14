@@ -13,17 +13,16 @@ Si non confectus, non reficiat
     var init = function () {
             cdb.$('.myloader').addClass('is-visible');
             window.myapp.fields = document.querySelector('.leftpanel').querySelectorAll('input');
+            window.myapp.init = true;
             getScaleParams();
             goMap(function () {
                 setQuery();
                 getColors();
                 getDataparams(function () {
                     getScaleParams();
-                    getQuants(function () {
-                        buildScales();
-                        setCSS(scaleindex);
-                        setEvents();
-                    });
+                    buildScales();
+                    setCSS(scaleindex);
+                    setEvents();
                 });
             });
         },
@@ -121,7 +120,8 @@ Si non confectus, non reficiat
                 log0,
                 c = [],
                 tmp,
-                mq;
+                mq,
+                tolerance = 100;
             mq = window.myapp.quants = window.myapp.quants || {};
             mq.original = [];
             for (var i = 0; i < r.original.length; i++) {
@@ -166,7 +166,7 @@ Si non confectus, non reficiat
                 mq.ntiles.unshift(0);
                 mq.jenks.unshift(0);
                 count += 1;
-                if (count >= 2) callback();
+                if (count >= 3) callback();
             });
             p.sql.execute('with a as(' + window.myapp.layer.attributes.sql + '), b as( select ' + p.fieldname + ', TRUNC((AVG(' + p.fieldname + ') - AVG(AVG(' + p.fieldname + ')) OVER ()) / trunc((STDDEV(AVG(' + p.fieldname + ')) OVER ())::numeric, 5) ) AS Bucket from a group by ' + p.fieldname + ' ), c as( select max(' + p.fieldname + ') as mx from b group by bucket order by bucket ) select array_agg(mx) as stdev from c').done(function (data) {
                 mq.stddev = data.rows[0].stdev.filter(function (a) {
@@ -174,8 +174,25 @@ Si non confectus, non reficiat
                 });
                 window.myapp.ramps.stddev = window.myapp.colorscale.colors(mq.stddev.length);
                 count += 1;
-                if (count >= 2) callback();
-            })
+                if (count >= 3) callback();
+            });
+            p.sql.execute('with b as(' + window.myapp.layer.attributes.sql + '), c as (select round(' + p.fieldname + '*' + tolerance + ')/' + tolerance + ' as v from b) select distinct(v) v from c where v is not null').done(function (data) {
+                try {
+                    tmp = data.rows.map(function (a) {
+                        return a.v
+                    });
+                    mq.ckmeans = ss.ckmeans(tmp, p.steps).map(function (a) {
+                        return a[0]
+                    });
+                } catch (errors) {
+                    console.log(errors);
+                    debugger;
+                    mq.ckmeans = [];
+                }
+                count += 1;
+                if (count >= 3) callback();
+            });
+
 
         },
         buildScales = function () {
@@ -190,7 +207,7 @@ Si non confectus, non reficiat
                 f,
                 t = [],
                 d = [],
-                names = ['Original scale', 'Interpolated scale', 'Log-start scale', 'Log-end scale', 'Log-center scale', 'Log shifted to POI scale', 'n-tile scale', 'Jenks scale', 'StdDev scale'],
+                names = ['Original scale', 'Interpolated scale', 'Log-start scale', 'Log-end scale', 'Log-center scale', 'Log shifted to POI scale', 'n-tile scale', 'Jenks scale', 'StdDev scale', 'Ckmeans.1d.dp'],
                 tfun = function (ii, rr, ww) {
                     return '<div style="height:' + h0 + 'px;width:' + ww + '%;background:' + rr[ii] + ';" title="' + rr[ii] + '"></div>'
                 },
@@ -228,7 +245,8 @@ Si non confectus, non reficiat
                 initcss(5, r.interpolated);
                 initcss(6, r.interpolated);
                 initcss(7, r.interpolated);
-                initcss(8, r.stddev);
+                initcss(8, r.interpolated);
+                initcss(9, r.stddev);
                 for (var i = 0; i < r.original.length; i++) {
                     fullfun(0, i, r.original, q.original, 100 / r.original.length);
                 }
@@ -240,19 +258,19 @@ Si non confectus, non reficiat
                     fullfun(5, i, r.interpolated, q.logshifted);
                     fullfun(6, i, r.interpolated, q.ntiles);
                     fullfun(7, i, r.interpolated, q.jenks);
+                    fullfun(8, i, r.interpolated, q.ckmeans);
                 }
                 for (var i = 0; i < r.stddev.length; i++) {
-                    fullfun(8, i, r.stddev, q.stddev);
+                    fullfun(9, i, r.stddev, q.stddev);
                 }
                 window.myapp.cartocss = window.myapp.cartocss.map(function (a) {
                     return a += '\n}';
                 });
-                for (var i = 0; i < 9; i++) {
+                for (var i = 0; i < 10; i++) {
                     s[i].innerHTML = t[i];
                     c[i].innerHTML = d[i];
                     cdb.$('.myloader:eq(' + (i + 1) + ')').removeClass('is-visible');
                 }
-
             } catch (errors) {
                 cdb.$('.myloader').removeClass('is-visible');
                 debugger;
@@ -294,7 +312,7 @@ Si non confectus, non reficiat
             margin = mi * h.scrollWidth / c;
             for (var i = 0; i < c; i++) {
                 alt = 100 * solid[i] / max;
-                ihtml += '<div class="histoblock" style="height:' + alt + '%;width:' + (100 / c) + '%;" title="avg: '+fxn(data.avg[data.freq.indexOf(solid[i])])+'  |  freq: '+solid[i]+'"></div>'
+                ihtml += '<div class="histoblock" style="height:' + alt + '%;width:' + (100 / c) + '%;" title="avg: ' + fxn(data.avg[data.freq.indexOf(solid[i])]) + '  |  freq: ' + solid[i] + '"></div>'
             }
             h.innerHTML = ihtml;
             n.innerHTML = (solid[-1] == void 0) ? '0 null values' : solid[-1] + ' null values';
@@ -309,7 +327,7 @@ Si non confectus, non reficiat
             document.querySelector('.mycss').innerHTML = '';
             document.querySelector('.mycss').appendChild(pre);
             prettyPrint();
-            cdb.$('.myloader:eq(10)').removeClass('is-visible');
+            cdb.$('.myloader:eq(11)').removeClass('is-visible');
         },
         setQuery = function () {
             var pre = cdb.L.DomUtil.create('pre', 'prettyprint lang-sql');

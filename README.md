@@ -22,6 +22,9 @@ Test it at
 
 ## CHANGELOG
 
+#### v 0.8
+* New quantification method: [Ckmeans.1d.dp](https://journal.r-project.org/archive/2011-2/RJournal_2011-2_Wang+Song.pdf)
+
 #### v 0.7
 * **Rewrote from scratch**: code cleaning and optimization to allow future improvements and new features
 * Histogram of the selected data field
