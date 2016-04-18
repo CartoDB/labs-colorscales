@@ -22,6 +22,9 @@ Test it at
 
 ## CHANGELOG
 
+#### v 0.9
+* Fixed some styling
+
 #### v 0.8
 * New quantification method: [Ckmeans.1d.dp](https://journal.r-project.org/archive/2011-2/RJournal_2011-2_Wang+Song.pdf)
 
