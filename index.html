@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="./scripts/prettify/prettify.css" />
     <link href="//cartodb-libs.global.ssl.fastly.net/cartodbui/assets/3.23.24/favicons/favicon.ico?1443603334" rel="shortcut icon" type="image/vnd.microsoft.icon" />
     <script src="./scripts/chroma.js"></script>
+    <script src="./scripts/cartocolor.js"></script>
     <script src="./scripts/simple_statistics.min.js"></script>
     <script src="./scripts/prettify/prettify.js"></script>
     <script src="./scripts/deep-insights.uncompressed.js"></script>
@@ -42,11 +43,14 @@
                     <input type="text" value="women" class="CDB-InputText">
                 </div>
                 <br>
-                <select name="select" class="CDB-SelectFake CDB-Text">
-                    <option value="marker">Marker</option>
-                    <option value="line">Line</option>
-                    <option value="polygon">Polygon</option>
-                </select>
+                <div class="u-tSpace-xl CDB-Text CDB-Fieldset">
+                    <p class="CDB-Legend CDB-Text is-semibold CDB-Size-medium u-rSpace--m">Geometry type</p>
+                    <select id="geoselect" class="CDB-SelectFake CDB-Text">
+                        <option value="marker">Marker</option>
+                        <option value="line">Line</option>
+                        <option value="polygon">Polygon</option>
+                    </select>
+                </div>
                 <div class="myquery" title="Layer query"></div>
             </div>
             <div class="CDB-Box-Modal scalebox">
@@ -59,8 +63,13 @@
                     </div>
                 </div>
                 <div class="u-tSpace-xl CDB-Text CDB-Fieldset">
+                    <p class="CDB-Legend CDB-Text is-semibold CDB-Size-medium u-rSpace--m">CartoColors</p>
+                    <select id="cartoselect" class="CDB-SelectFake CDB-Text">
+                    </select>
+                </div>
+                <div class="u-tSpace-xl CDB-Text CDB-Fieldset">
                     <p class="CDB-Legend CDB-Text is-semibold CDB-Size-medium u-rSpace--m">Original scale</p>
-                    <input type="text" name="text" value="['#ffffcc','#a1dab4','#41b6c4','#2c7fb8','#253494']" class="CDB-InputText">
+                    <input type="text" name="text" value="#007553,#00946f,#34b289,#67cda3,#8fe2b8,#b0f2ca,#cafdd8" class="CDB-InputText">
                 </div>
                 <div class="u-tSpace-xl CDB-Text CDB-Fieldset">
                     <p class="CDB-Legend CDB-Text is-semibold CDB-Size-medium u-rSpace--m">Number of buckets</p>
@@ -106,12 +115,12 @@
                 </div>
                 <br>
                 <div class="u-iblock CDB-Text CDB-Size-medium u-rSpace--xl" style="position:relative;">
-                    <input class="CDB-Checkbox" type="checkbox" name="params" value="bezier" checked>
+                    <input class="CDB-Checkbox" type="checkbox" name="params" value="bezier">
                     <span class="u-iBlock CDB-Checkbox-face"></span>
                     <label class="u-iBlock u-lSpace">Bezier interpolation</label>
                 </div>
                 <div class="CDB-InfoBox">
-                    <p class="CDB-Text CDB-Size-medium u-bSpace--m"> Bezier interpolation is always done in Lab space. Max order: 5.</p>
+                    <p class="CDB-Text CDB-Size-medium u-bSpace--m"> Bezier interpolation is always done in Lab space. Not needed for CartoColors. Max order: 5.</p>
                 </div>
                 <br>
                 <div class="u-iblock CDB-Text CDB-Size-medium u-rSpace--xl" style="position:relative;">
@@ -245,6 +254,6 @@
         </div>
     </div>
     <div class='attrib'>
-        <p class="CDB-Text CDB-Size-small">CartoDB Color Scales Tool v0.9 by <a href="https://github.com/AbelVM" target=_blank>AbelVM</a> 2016-04-18</p>
+        <p class="CDB-Text CDB-Size-small">CartoDB Color Scales Tool v0.10 by <a href="https://github.com/AbelVM" target=_blank>AbelVM</a> 2016-04-18</p>
     </div>
 </body>
