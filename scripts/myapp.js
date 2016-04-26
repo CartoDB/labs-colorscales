@@ -14,7 +14,10 @@ Si non confectus, non reficiat
             cdb.$('.myloader').addClass('is-visible');
             window.myapp.fields = document.querySelector('.leftpanel').querySelectorAll('input');
             window.myapp.init = true;
+            cartoColors();
             getScaleParams();
+            // v0.10
+            document.querySelectorAll('.CDB-Box-Modal.scalebox')[12].style.display='none';
             goMap(function () {
                 setQuery();
                 getColors();
@@ -27,6 +30,18 @@ Si non confectus, non reficiat
             });
         },
         scaleindex = 0,
+        cartoColors = function(){
+            var sel = document.querySelector('#cartoselect'),
+                colors = Object.keys(colorbrewer),
+                opt;
+            for (var i =0; i< colors.length; i++){
+                opt= document.createElement('option');
+                opt.value = colorbrewer[colors[i]]['7'];
+                opt.text = colors[i];
+                sel.appendChild(opt);
+            }
+
+        },
         getScaleParams = function () {
             var getSQL = function () {
                     var viz = window.myapp.params.viz,
@@ -166,7 +181,8 @@ Si non confectus, non reficiat
                 mq.ntiles.unshift(0);
                 mq.jenks.unshift(0);
                 count += 1;
-                if (count >= 3) callback();
+                // v0.10
+                if (count >= 2) callback();
             });
             p.sql.execute('with a as(' + window.myapp.layer.attributes.sql + '), b as( select ' + p.fieldname + ', TRUNC((AVG(' + p.fieldname + ') - AVG(AVG(' + p.fieldname + ')) OVER ()) / trunc((STDDEV(AVG(' + p.fieldname + ')) OVER ())::numeric, 5) ) AS Bucket from a group by ' + p.fieldname + ' ), c as( select max(' + p.fieldname + ') as mx from b group by bucket order by bucket ) select array_agg(mx) as stdev from c').done(function (data) {
                 mq.stddev = data.rows[0].stdev.filter(function (a) {
@@ -174,9 +190,11 @@ Si non confectus, non reficiat
                 });
                 window.myapp.ramps.stddev = window.myapp.colorscale.colors(mq.stddev.length);
                 count += 1;
-                if (count >= 3) callback();
+                // v0.10
+                if (count >= 2) callback();
             });
-            p.sql.execute('with b as(' + window.myapp.layer.attributes.sql + '), c as (select round(' + p.fieldname + '*' + tolerance + ')/' + tolerance + ' as v from b) select distinct(v) v from c where v is not null').done(function (data) {
+            // v0.10
+            /*p.sql.execute('with b as(' + window.myapp.layer.attributes.sql + '), c as (select round(' + p.fieldname + '*' + tolerance + ')/' + tolerance + ' as v from b) select distinct(v) v from c where v is not null').done(function (data) {
                 try {
                     tmp = data.rows.map(function (a) {
                         return a.v
@@ -191,7 +209,7 @@ Si non confectus, non reficiat
                 }
                 count += 1;
                 if (count >= 3) callback();
-            });
+            }); */
 
 
         },
@@ -245,7 +263,8 @@ Si non confectus, non reficiat
                 initcss(5, r.interpolated);
                 initcss(6, r.interpolated);
                 initcss(7, r.interpolated);
-                initcss(8, r.interpolated);
+                // v0.10
+                //initcss(8, r.interpolated);
                 initcss(9, r.stddev);
                 for (var i = 0; i < r.original.length; i++) {
                     fullfun(0, i, r.original, q.original, 100 / r.original.length);
@@ -258,7 +277,8 @@ Si non confectus, non reficiat
                     fullfun(5, i, r.interpolated, q.logshifted);
                     fullfun(6, i, r.interpolated, q.ntiles);
                     fullfun(7, i, r.interpolated, q.jenks);
-                    fullfun(8, i, r.interpolated, q.ckmeans);
+                    // v0.10
+                    //fullfun(8, i, r.interpolated, q.ckmeans);
                 }
                 for (var i = 0; i < r.stddev.length; i++) {
                     fullfun(9, i, r.stddev, q.stddev);
@@ -402,6 +422,10 @@ Si non confectus, non reficiat
                     if (getScaleParams()) return;
                     buildScales();
                     setCSS(scaleindex);
+                },
+                change_cartocolor = function(){
+                    ff[3].value = document.querySelector('#cartoselect').value;
+                    change_colors();
                 };
             ff[0].onkeyup = init;
             ff[1].onkeyup = change_field;
@@ -422,7 +446,8 @@ Si non confectus, non reficiat
                 scaleindex = document.querySelector('input[type=radio]:checked').value;
                 setCSS(scaleindex);
             })
-            cdb.$('select').on('change', change_geom);
+            cdb.$('#geoselect').on('change', change_geom);
+            cdb.$('#cartoselect').on('change', change_cartocolor);
         };
 
     window.onload = init;

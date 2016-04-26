@@ -22,6 +22,10 @@ Test it at
 
 ## CHANGELOG
 
+#### v 0.10
+* Added CartoColor by [@makella](https://github.com/makella)
+* Removed **Ckmeans.1d.dp** due to really low performance on large datasets. Its result was pretty close to Jenks, anyway.
+
 #### v 0.9
 * Fixed some styling
 
