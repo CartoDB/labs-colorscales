@@ -59,13 +59,14 @@ Si non confectus, non reficiat
                     layername: ff[1].value,
                     fieldname: ff[2].value,
                     fieldtype: document.querySelector('select').value,
-                    scale: ff[3].value.replace('[', '').replace(']', '').replace(/\"/g, '').replace(/\'/g, '').replace(/\s+/g, '').split(','),
-                    steps: ff[4].value * 1,
-                    min: ff[5].value * 1,
-                    poi: ff[6].value * 1,
-                    max: ff[7].value * 1,
-                    bezier: ff[8].checked,
-                    luminfix: ff[9].checked
+                    flip: ff[3].checked,
+                    scale: ff[4].value.replace('[', '').replace(']', '').replace(/\"/g, '').replace(/\'/g, '').replace(/\s+/g, '').split(','),
+                    steps: ff[5].value * 1,
+                    min: ff[6].value * 1,
+                    poi: ff[7].value * 1,
+                    max: ff[8].value * 1,
+                    bezier: ff[9].checked,
+                    luminfix: ff[10].checked
                 };
                 window.myapp.params.sql = getSQL();
                 return false;
@@ -83,9 +84,9 @@ Si non confectus, non reficiat
                 document.querySelector('select').value = data.rows[0].type.toLowerCase().replace('multi', '');
                 window.myapp.params.sql.execute(query).done(function (data) {
                     var dr = data.rows[0];
-                    window.myapp.fields[5].value = dr.mn;
-                    window.myapp.fields[6].value = dr.avg[dr.freq.indexOf(Math.max.apply(null, dr.freq))];
-                    window.myapp.fields[7].value = dr.mx;
+                    window.myapp.fields[6].value = dr.mn;
+                    window.myapp.fields[7].value = dr.avg[dr.freq.indexOf(Math.max.apply(null, dr.freq))];
+                    window.myapp.fields[8].value = dr.mx;
                     setHisto(dr, buckets);
                     cdb.$('.myloader:eq(0)').removeClass('is-visible');
                     if (getScaleParams()) return;
@@ -233,7 +234,11 @@ Si non confectus, non reficiat
                     return '<div class="chartblock" style="height:' + chroma(rr[ii]).lab()[0] + 'px;width:' + ww + '%;"></div>'
                 },
                 cfun = function (ii, qq) {
-                    return '\n	[' + p.fieldname + '>' + qq[ii] + ']{\n		' + p.fieldtype + '-fill: @color' + ii + ';\n       }';
+                    if (p.fieldtype == 'polygon'){
+                        return '\n	[' + p.fieldname + '>' + qq[ii] + ']{\n		polygon-fill: @color' + ii + ';\n		line-color: lighten(@color' + ii + ',5);\n       }';
+                    }else{
+                        return '\n	[' + p.fieldname + '>' + qq[ii] + ']{\n		' + p.fieldtype + '-fill: @color' + ii + ';\n       }';
+                    }
                 },
                 wfun = function (ii, qq) {
                     var h = qq[i + 1] || p.max;
@@ -251,7 +256,11 @@ Si non confectus, non reficiat
                     window.myapp.cartocss[jj] = '/** ' + names[jj] + ' */\n\n' + rr.map(function (a, b) {
                         return '@color' + b + ': ' + a + ';\n'
                     }).join('');
-                    window.myapp.cartocss[jj] += '\n#' + p.layername + '{\n	' + p.fieldtype + '-opacity: 1;\n	' + p.fieldtype + '-fill: @color0;';
+                    if (p.fieldtype == 'polygon'){
+                        window.myapp.cartocss[jj] += '\n#' + p.layername + '{\npolygon-opacity: 0.9;\npolygon-fill: @color0;\nline-opacity: 1;\nline-width: 0.5;\nline-color: lighten(@color0,5);\n';
+                    }else{
+                        window.myapp.cartocss[jj] += '\n#' + p.layername + '{\n	' + p.fieldtype + '-opacity: 1;\n	' + p.fieldtype + '-fill: @color0;';
+                    }
                 };
             window.myapp.cartocss = [];
             try {
@@ -424,24 +433,33 @@ Si non confectus, non reficiat
                     setCSS(scaleindex);
                 },
                 change_cartocolor = function(){
-                    ff[3].value = document.querySelector('#cartoselect').value;
+                    ff[4].value = (ff[3].checked) ? document.querySelector('#cartoselect').value.split(',').reverse(): document.querySelector('#cartoselect').value;
                     change_colors();
+                },
+                flipscale = function(){
+                    ff[4].value = ff[4].value.split(',').reverse();
+                    if (getScaleParams()) return;
+                    getColors();
+                    buildScales();
+                    setCSS(scaleindex);
                 };
             ff[0].onkeyup = init;
             ff[1].onkeyup = change_field;
             ff[2].onkeyup = change_field;
-            ff[3].onkeyup = change_colors;
-            ff[4].onchange = ff[4].onkeyup = change_colors;
-            ff[5].onchange = ff[5].onkeyup = change_limits;
-            ff[6].onchange = ff[6].onkeyup = function () {
+            ff[3].onchange = flipscale;
+            ff[4].onkeyup = change_colors;
+            ff[5].onchange = ff[5].onkeyup = change_colors;
+            ff[6].onchange = ff[6].onkeyup = change_limits;
+            ff[7].onchange = ff[7].onkeyup = function () {
                 if (getScaleParams()) return;
                 if (this.value < window.myapp.params.min || this.value > window.myapp.params.max) {
                     return;
                 }
                 change_limits();
             };
-            ff[7].onchange = ff[7].onkeyup = change_limits;
-            cdb.$('input[type=checkbox]').on('change', change_colorspars);
+            ff[8].onchange = ff[8].onkeyup = change_limits;
+            ff[9].onchange = ff[10].onchange = change_colorspars;
+            //cdb.$('input[type=checkbox]').on('change', change_colorspars);
             cdb.$('input[type=radio]').on('change', function () {
                 scaleindex = document.querySelector('input[type=radio]:checked').value;
                 setCSS(scaleindex);
