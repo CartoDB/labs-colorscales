@@ -236,6 +236,8 @@ Si non confectus, non reficiat
                 cfun = function (ii, qq) {
                     if (p.fieldtype == 'polygon'){
                         return '\n	[' + p.fieldname + '>' + qq[ii] + ']{\n		polygon-fill: @color' + ii + ';\n		line-color: lighten(@color' + ii + ',5);\n       }';
+                    }if (p.fieldtype == 'marker'){
+                        return '\n	[' + p.fieldname + '>' + qq[ii] + ']{\n		marker-fill: @color' + ii + ';\n		marker-line-color: darken(@color' + ii + ',5);\n       }';
                     }else{
                         return '\n	[' + p.fieldname + '>' + qq[ii] + ']{\n		' + p.fieldtype + '-fill: @color' + ii + ';\n       }';
                     }
@@ -258,6 +260,8 @@ Si non confectus, non reficiat
                     }).join('');
                     if (p.fieldtype == 'polygon'){
                         window.myapp.cartocss[jj] += '\n#' + p.layername + '{\npolygon-opacity: 0.9;\npolygon-fill: @color0;\nline-opacity: 1;\nline-width: 0.5;\nline-color: lighten(@color0,5);\n';
+                    }else if (p.fieldtype == 'marker'){
+                        window.myapp.cartocss[jj] += '\n#' + p.layername + '{\nmarker-fill:@color0;\nmarker-fill-opacity: 0.9;\nmarker-line-color: darken(@color0,5);\nmarker-line-width: 1;\nmarker-line-opacity: 0.9;\nmarker-width: 8;\nmarker-allow-overlap: true;\n';
                     }else{
                         window.myapp.cartocss[jj] += '\n#' + p.layername + '{\n	' + p.fieldtype + '-opacity: 1;\n	' + p.fieldtype + '-fill: @color0;';
                     }

@@ -22,6 +22,9 @@ Test it at
 
 ## CHANGELOG
 
+#### v 0.12
+* Added tweaked styling for markers #18
+
 #### v 0.11
 * Added "Flip" scale function #14
 * Added tweaked styling for polygons #16
