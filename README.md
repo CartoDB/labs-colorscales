@@ -24,7 +24,7 @@ Test it at
 
 #### v 0.13
 * Removed orphan dependencies
-* Updated CartoColor
+* Updated CartoColor #20
 * Improved CartoColor selector
 
 #### v 0.12
