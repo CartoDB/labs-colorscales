@@ -171,3 +171,95 @@ pre.prettyprint {
 #nulls {
     margin-top: 10px;
 }
+
+
+
+
+
+
+
+.desc {
+    color: #6b6b6b;
+}
+
+.desc a {
+    color: #0092dd;
+}
+.dropdown{
+    width: 184.406px;
+}
+.dropdown dd,
+.dropdown dt,
+.dropdown ul {
+    margin: 0px;
+    padding: 0px;
+    display: block;
+}
+
+.dropdown dd {
+    position: relative;
+}
+
+.dropdown a,
+.dropdown a:visited {
+    color: #ddd;
+    text-decoration: none;
+    outline: none;
+}
+
+.dropdown a:hover {
+    color: #ddd;
+}
+
+.dropdown dt a:hover {
+    color: #ddd;
+    border: 1px solid #ccc;
+}
+
+.dropdown dt a {
+    background: white url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAz0lEQVQ4T+3Tuw3CMBAG4DulTgRxsgcSe1AQZkGUSBQUjEIJ7MAAjHHEkl1jIyNZMiTxQ6QDl/GfT3dnG2HkhSN78Ae/n2hnhkVRlEKINobO85xJKe9u9g2c1PUsU+qqEBtOdPGhVVUtlNZHrdScc36z2U6FJWM7AFhrxOUQajFA3LdE28EK7YaDmkrP7g8+zOQG76GDrjjRyYRDmBc0my6aAaCZWV+bwZbdgEVf33pm9nlwUU9vytgGEB+c6BC6TlFgCElqOQULHkoq9qPgEyoOWRWdqEBdAAAAAElFTkSuQmCC) no-repeat scroll right center;
+    display: block;
+    padding-right: 20px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    width: 100%;
+    padding: 5px;
+    min-height: 25px;
+}
+
+.dropdown dt a span {
+    cursor: pointer;
+    display: block;
+}
+
+.dropdown dd ul {
+    background: white none repeat scroll 0 0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    color: white;
+    display: none;
+    left: 0px;
+    padding: 5px 0px;
+    position: absolute;
+    top: 2px;
+    z-index: 1;
+    width: auto;
+    min-width: 194.406px;
+    list-style: none;
+    max-height: 300px;
+    overflow-y: scroll;
+}
+
+.dropdown span.value {
+    display: none;
+}
+
+.dropdown dd ul li a {
+    padding: 5px;
+    display: block;
+    z-index:22;
+}
+
+.dropdown dd ul li a:hover {
+    background-color: #ddd;
+}

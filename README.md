@@ -22,6 +22,11 @@ Test it at
 
 ## CHANGELOG
 
+#### v 0.13
+* Removed orphan dependencies
+* Updated CartoColor
+* Improved CartoColor selector
+
 #### v 0.12
 * Added tweaked styling for markers #18
 
