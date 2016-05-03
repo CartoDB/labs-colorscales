@@ -17,7 +17,7 @@ Si non confectus, non reficiat
             cartoColors();
             getScaleParams();
             // v0.10
-            document.querySelectorAll('.CDB-Box-Modal.scalebox')[12].style.display='none';
+            document.querySelectorAll('.CDB-Box-Modal.scalebox')[12].style.display = 'none';
             goMap(function () {
                 setQuery();
                 getColors();
@@ -29,18 +29,77 @@ Si non confectus, non reficiat
                 });
             });
         },
+        createDropDown = function (id, callback) {
+            var source = cdb.$("#"+id),
+                selected = source.find("option[selected]"),
+                options = cdb.$("option", source),
+                makescale = function(text,val){
+                    var colors = val.split(','),
+                        scale = document.createElement('span'),
+                        item;
+                    scale.setAttribute('style',"display:flex; justifyContent: center; height: 25px;");
+                    scale.setAttribute('title', text);
+                    for (var i=0; i< colors.length; i++){
+                        item = document.createElement('div')
+                        item.setAttribute('style',"background:"+colors[i]+"; borderRadius:4px; height: 25px; width:22.86px;");
+                        scale.appendChild(item);
+                    }
+                    return scale.outerHTML;
+                };
+            cdb.$("body").append('<dl id="target" class="dropdown"></dl>')
+            cdb.$("#target").append('<dt><a href="#">' + selected.text() +
+                '<span class="value">' + selected.val() +
+                '</span></a></dt>')
+            cdb.$("#target").append('<dd><ul></ul></dd>')
+            options.each(function () {
+                cdb.$("#target dd ul").append('<li><a href="#">'+makescale(cdb.$(this).text(),cdb.$(this).val())+'<span class="value">' +cdb.$(this).val() + '</span></a></li>');
+            });
+            source.replaceWith(cdb.$("#target"));
+            cdb.$(".dropdown dt a").html(cdb.$("#target").find("a")[1].innerHTML);
+            cdb.$(".dropdown dt a").click(function() {
+                cdb.$(".dropdown dd ul").toggle();
+            });
+            cdb.$(document).bind('click', function(e) {
+                var $clicked = cdb.$(e.target);
+                if (! $clicked.parents().hasClass("dropdown"))
+                    cdb.$(".dropdown dd ul").hide();
+            });
+            cdb.$(".dropdown dd ul li a").click(function() {
+                var text = cdb.$(this).html();
+                cdb.$(".dropdown dt a").html(text);
+                cdb.$(".dropdown dd ul").hide();
+                var source = cdb.$("#target");
+                source.val(cdb.$(this).find("span.value").html());
+                callback instanceof Function && callback(cdb.$(this).find("span.value").get(0).innerHTML);
+            });
+        },
         scaleindex = 0,
-        cartoColors = function(){
-            var sel = document.querySelector('#cartoselect'),
+        cartoColors = function () {
+            var ff = window.myapp.fields,
+                sel = document.querySelector('#cartoselect'),
                 colors = Object.keys(colorbrewer),
-                opt;
-            for (var i =0; i< colors.length; i++){
-                opt= document.createElement('option');
+                opt,
+                change_colors = function () {
+                    cdb.$('.myloader').addClass('is-visible');
+                    cdb.$('.myloader:eq(0)').removeClass('is-visible');
+                    if (getScaleParams()) return;
+                    getColors();
+                    getQuants(function () {
+                        buildScales();
+                        setCSS(scaleindex);
+                    });
+                };
+            for (var i = 0; i < colors.length; i++) {
+                opt = document.createElement('option');
                 opt.value = colorbrewer[colors[i]]['7'];
                 opt.text = colors[i];
                 sel.appendChild(opt);
             }
-
+            createDropDown('cartoselect', function(){
+                var selection = cdb.$('#target').find("span.value").html();
+                ff[4].value = (ff[3].checked) ? selection.split(',').reverse() : selection;
+                change_colors();
+            });
         },
         getScaleParams = function () {
             var getSQL = function () {
@@ -234,11 +293,12 @@ Si non confectus, non reficiat
                     return '<div class="chartblock" style="height:' + chroma(rr[ii]).lab()[0] + 'px;width:' + ww + '%;"></div>'
                 },
                 cfun = function (ii, qq) {
-                    if (p.fieldtype == 'polygon'){
+                    if (p.fieldtype == 'polygon') {
                         return '\n	[' + p.fieldname + '>' + qq[ii] + ']{\n		polygon-fill: @color' + ii + ';\n		line-color: lighten(@color' + ii + ',5);\n       }';
-                    }if (p.fieldtype == 'marker'){
+                    }
+                    if (p.fieldtype == 'marker') {
                         return '\n	[' + p.fieldname + '>' + qq[ii] + ']{\n		marker-fill: @color' + ii + ';\n		marker-line-color: darken(@color' + ii + ',5);\n       }';
-                    }else{
+                    } else {
                         return '\n	[' + p.fieldname + '>' + qq[ii] + ']{\n		' + p.fieldtype + '-fill: @color' + ii + ';\n       }';
                     }
                 },
@@ -258,11 +318,11 @@ Si non confectus, non reficiat
                     window.myapp.cartocss[jj] = '/** ' + names[jj] + ' */\n\n' + rr.map(function (a, b) {
                         return '@color' + b + ': ' + a + ';\n'
                     }).join('');
-                    if (p.fieldtype == 'polygon'){
+                    if (p.fieldtype == 'polygon') {
                         window.myapp.cartocss[jj] += '\n#' + p.layername + '{\npolygon-opacity: 0.9;\npolygon-fill: @color0;\nline-opacity: 1;\nline-width: 0.5;\nline-color: lighten(@color0,5);\n';
-                    }else if (p.fieldtype == 'marker'){
+                    } else if (p.fieldtype == 'marker') {
                         window.myapp.cartocss[jj] += '\n#' + p.layername + '{\nmarker-fill:@color0;\nmarker-fill-opacity: 0.9;\nmarker-line-color: darken(@color0,5);\nmarker-line-width: 1;\nmarker-line-opacity: 0.9;\nmarker-width: 8;\nmarker-allow-overlap: true;\n';
-                    }else{
+                    } else {
                         window.myapp.cartocss[jj] += '\n#' + p.layername + '{\n	' + p.fieldtype + '-opacity: 1;\n	' + p.fieldtype + '-fill: @color0;';
                     }
                 };
@@ -436,11 +496,11 @@ Si non confectus, non reficiat
                     buildScales();
                     setCSS(scaleindex);
                 },
-                change_cartocolor = function(){
-                    ff[4].value = (ff[3].checked) ? document.querySelector('#cartoselect').value.split(',').reverse(): document.querySelector('#cartoselect').value;
+                change_cartocolor = function () {
+                    ff[4].value = (ff[3].checked) ? document.querySelector('#cartoselect').value.split(',').reverse() : document.querySelector('#cartoselect').value;
                     change_colors();
                 },
-                flipscale = function(){
+                flipscale = function () {
                     ff[4].value = ff[4].value.split(',').reverse();
                     if (getScaleParams()) return;
                     getColors();
