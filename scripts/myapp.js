@@ -30,18 +30,18 @@ Si non confectus, non reficiat
             });
         },
         createDropDown = function (id, callback) {
-            var source = cdb.$("#"+id),
+            var source = cdb.$("#" + id),
                 selected = source.find("option[selected]"),
                 options = cdb.$("option", source),
-                makescale = function(text,val){
+                makescale = function (text, val) {
                     var colors = val.split(','),
                         scale = document.createElement('span'),
                         item;
-                    scale.setAttribute('style',"display:flex; justifyContent: center; height: 25px;");
+                    scale.setAttribute('style', "display:flex; justifyContent: center; height: 25px;");
                     scale.setAttribute('title', text);
-                    for (var i=0; i< colors.length; i++){
+                    for (var i = 0; i < colors.length; i++) {
                         item = document.createElement('div')
-                        item.setAttribute('style',"background:"+colors[i]+"; borderRadius:4px; height: 25px; width:22.86px;");
+                        item.setAttribute('style', "background:" + colors[i] + "; borderRadius:4px; height: 25px; width:22.86px;");
                         scale.appendChild(item);
                     }
                     return scale.outerHTML;
@@ -52,19 +52,19 @@ Si non confectus, non reficiat
                 '</span></a></dt>')
             cdb.$("#target").append('<dd><ul></ul></dd>')
             options.each(function () {
-                cdb.$("#target dd ul").append('<li><a href="#">'+makescale(cdb.$(this).text(),cdb.$(this).val())+'<span class="value">' +cdb.$(this).val() + '</span></a></li>');
+                cdb.$("#target dd ul").append('<li><a href="#">' + makescale(cdb.$(this).text(), cdb.$(this).val()) + '<span class="value">' + cdb.$(this).val() + '</span></a></li>');
             });
             source.replaceWith(cdb.$("#target"));
             cdb.$(".dropdown dt a").html(cdb.$("#target").find("a")[1].innerHTML);
-            cdb.$(".dropdown dt a").click(function() {
+            cdb.$(".dropdown dt a").click(function () {
                 cdb.$(".dropdown dd ul").toggle();
             });
-            cdb.$(document).bind('click', function(e) {
+            cdb.$(document).bind('click', function (e) {
                 var $clicked = cdb.$(e.target);
-                if (! $clicked.parents().hasClass("dropdown"))
+                if (!$clicked.parents().hasClass("dropdown"))
                     cdb.$(".dropdown dd ul").hide();
             });
-            cdb.$(".dropdown dd ul li a").click(function() {
+            cdb.$(".dropdown dd ul li a").click(function () {
                 var text = cdb.$(this).html();
                 cdb.$(".dropdown dt a").html(text);
                 cdb.$(".dropdown dd ul").hide();
@@ -89,13 +89,14 @@ Si non confectus, non reficiat
                         setCSS(scaleindex);
                     });
                 };
+            if (sel == void 0) return;
             for (var i = 0; i < colors.length; i++) {
                 opt = document.createElement('option');
                 opt.value = colorbrewer[colors[i]]['7'];
                 opt.text = colors[i];
                 sel.appendChild(opt);
             }
-            createDropDown('cartoselect', function(){
+            createDropDown('cartoselect', function () {
                 var selection = cdb.$('#target').find("span.value").html();
                 ff[4].value = (ff[3].checked) ? selection.split(',').reverse() : selection;
                 change_colors();
@@ -113,7 +114,7 @@ Si non confectus, non reficiat
                 ff = window.myapp.fields;
             ff[0].value = ff[0].value.replace('api/v2/', 'api/v3/');
             try {
-                window.myapp.params = {
+                window.myapp.params = cdb.$.extend(window.myapp.params,{
                     viz: ff[0].value,
                     layername: ff[1].value,
                     fieldname: ff[2].value,
@@ -126,7 +127,7 @@ Si non confectus, non reficiat
                     max: ff[8].value * 1,
                     bezier: ff[9].checked,
                     luminfix: ff[10].checked
-                };
+                });
                 window.myapp.params.sql = getSQL();
                 return false;
             } catch (error) {
@@ -136,10 +137,10 @@ Si non confectus, non reficiat
             }
         },
         getDataparams = function (callback) {
-            window.myapp.params.sql.execute('with b as(' + window.myapp.layer.attributes.sql + ') select GeometryType(the_geom_webmercator) as type from b limit 1').done(function (data) {
+            window.myapp.params.sql.execute('with b as(' + window.myapp.params.query + ') select GeometryType(the_geom_webmercator) as type from b limit 1').done(function (data) {
                 var field = window.myapp.fields[2].value,
                     buckets = 50,
-                    query = 'with a as(' + window.myapp.layer.attributes.sql + '), c as ( select min(a.' + field + ') as mn, max(a.' + field + ') as mx from a ), d as( select width_bucket(a.' + field + ', c.mn, c.mx, ' + (buckets - 1) + ') as bucket, count(*) as freq, min(a.' + field + ')+0.5*(max(a.' + field + ') - min(a.' + field + ')) as avg from a, c group by 1 order by 1 ), e as( select array_agg(avg) as avg, array_agg(d.bucket) as bucket, array_agg(d.freq) as freq from d ) select * from c,e';
+                    query = 'with a as(' + window.myapp.params.query + '), c as ( select min(a.' + field + ') as mn, max(a.' + field + ') as mx from a ), d as( select width_bucket(a.' + field + ', c.mn, c.mx, ' + (buckets - 1) + ') as bucket, count(*) as freq, min(a.' + field + ')+0.5*(max(a.' + field + ') - min(a.' + field + ')) as avg from a, c group by 1 order by 1 ), e as( select array_agg(avg) as avg, array_agg(d.bucket) as bucket, array_agg(d.freq) as freq from d ) select * from c,e';
                 document.querySelector('select').value = data.rows[0].type.toLowerCase().replace('multi', '');
                 window.myapp.params.sql.execute(query).done(function (data) {
                     var dr = data.rows[0];
@@ -233,7 +234,7 @@ Si non confectus, non reficiat
                 mq.logshifted[i + c[1] - 1] = delta(f[5]);
                 f[5] += (1 - c[0]) * (log0[c[1] - i] - log0[c[1] - i - 1]);
             }
-            p.sql.execute('with b as(' + window.myapp.layer.attributes.sql + ') select CDB_QuantileBins(array_agg(' + p.fieldname + '::numeric), ' + p.steps + ') as ntile, CDB_JenksBins(array_agg(' + p.fieldname + '::numeric), ' + p.steps + ') as jenks from b').done(function (data) {
+            p.sql.execute('with b as(' + window.myapp.params.query  + ') select CDB_QuantileBins(array_agg(' + p.fieldname + '::numeric), ' + p.steps + ') as ntile, CDB_JenksBins(array_agg(' + p.fieldname + '::numeric), ' + p.steps + ') as jenks from b').done(function (data) {
                 mq.ntiles = data.rows[0].ntile;
                 mq.jenks = data.rows[0].jenks.filter(function (a) {
                     return a != null
@@ -244,7 +245,7 @@ Si non confectus, non reficiat
                 // v0.10
                 if (count >= 2) callback();
             });
-            p.sql.execute('with a as(' + window.myapp.layer.attributes.sql + '), b as( select ' + p.fieldname + ', TRUNC((AVG(' + p.fieldname + ') - AVG(AVG(' + p.fieldname + ')) OVER ()) / trunc((STDDEV(AVG(' + p.fieldname + ')) OVER ())::numeric, 5) ) AS Bucket from a group by ' + p.fieldname + ' ), c as( select max(' + p.fieldname + ') as mx from b group by bucket order by bucket ) select array_agg(mx) as stdev from c').done(function (data) {
+            p.sql.execute('with a as(' + window.myapp.params.query  + '), b as( select ' + p.fieldname + ', TRUNC((AVG(' + p.fieldname + ') - AVG(AVG(' + p.fieldname + ')) OVER ()) / trunc((STDDEV(AVG(' + p.fieldname + ')) OVER ())::numeric, 5) ) AS Bucket from a group by ' + p.fieldname + ' ), c as( select max(' + p.fieldname + ') as mx from b group by bucket order by bucket ) select array_agg(mx) as stdev from c').done(function (data) {
                 mq.stddev = data.rows[0].stdev.filter(function (a) {
                     return a != null
                 });
@@ -425,7 +426,7 @@ Si non confectus, non reficiat
         setQuery = function () {
             var pre = cdb.L.DomUtil.create('pre', 'prettyprint lang-sql');
             pre.id = 'query';
-            pre.innerHTML = escapeHtml(window.myapp.layer.attributes.sql);
+            pre.innerHTML = escapeHtml(window.myapp.params.query);
             document.querySelector('.myquery').innerHTML = '';
             document.querySelector('.myquery').appendChild(pre);
             prettyPrint();
@@ -448,6 +449,9 @@ Si non confectus, non reficiat
                 window.myapp.layer = layers.models.filter(function (a) {
                     return a.attributes.layer_name == layername;
                 })[0];
+                window.myapp.params.query = (window.myapp.layer.attributes.sql != void 0) ? window.myapp.layer.attributes.sql : vis._analysisCollection.models.filter(function (a) {
+                    return a.id == window.myapp.layer.attributes.source
+                })[0].attributes.query;
                 callback();
             });
         },

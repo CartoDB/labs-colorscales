@@ -22,6 +22,11 @@ Test it at
 
 ## CHANGELOG
 
+#### v 0.14
+* Updated DI & CartoColor libs
+* Fixed some issues with maps that already have widgets
+* Improved performance
+
 #### v 0.13
 * Removed orphan dependencies
 * Updated CartoColor #20
