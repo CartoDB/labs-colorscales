@@ -137,7 +137,13 @@ Si non confectus, non reficiat
             }
         },
         getDataparams = function (callback) {
-            window.myapp.params.sql.execute('with b as(' + window.myapp.params.query + ') select GeometryType(the_geom_webmercator) as type from b limit 1').done(function (data) {
+            window.myapp.params.sql.execute('with b as(' + window.myapp.params.query + ') select GeometryType(the_geom_webmercator) as type, pg_typeof('+ window.myapp.params.fieldname +') as f from b limit 1').done(function (data) {
+
+                if (['smallint', 'integer', 'bigint', 'decimal', 'numeric', 'real', 'double precision', 'smallserial', 'serial', 'bigserial'].some(function(a){ return a == data.rows[0].f.toLowerCase() }) == false ) {
+                    alert('Non numeric fields are not suported');
+                    return;
+                }
+
                 var field = window.myapp.fields[2].value,
                     buckets = 50,
                     query = 'with a as(' + window.myapp.params.query + '), c as ( select min(a.' + field + ') as mn, max(a.' + field + ') as mx from a ), d as( select width_bucket(a.' + field + ', c.mn, c.mx, ' + (buckets - 1) + ') as bucket, count(*) as freq, min(a.' + field + ')+0.5*(max(a.' + field + ') - min(a.' + field + ')) as avg from a, c group by 1 order by 1 ), e as( select array_agg(avg) as avg, array_agg(d.bucket) as bucket, array_agg(d.freq) as freq from d ) select * from c,e';

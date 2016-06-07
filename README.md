@@ -3,7 +3,7 @@
 
 Cook here your color scales, playing with different color ramps, quantification methods, etc.
 
-Just choose one of your CartoDB maps as test bed, and play. This tool lets you check how your color scale performs with your real data and generates the desired \*\*\*\*\*CSS, so you can copy&paste it to CartoDB editor.
+Just choose one of your CartoDB maps as test bed, and play. This tool lets you check how your color scale performs with your real data and generates the desired \*\*\*\*\*CSS, so you can copy&paste it to CartoDB editor and generate the desired **choropleth**.
 
 ![img](http://storage8.static.itmages.com/i/16/0408/h_1460147194_2770683_744e85779a.png)
 
@@ -19,8 +19,13 @@ Test it at
  * [Octarine](http://wiki.lspace.org/mediawiki/Octarine)
  * [Infra-black](http://wiki.lspace.org/mediawiki/Infra-black)
 * The preloaded dataset is the **Spain Census 2011** and [this](http://www.ine.es/censos2011_datos/indicadores_seccen_rejilla.xls) is the list of the available fields there and their description. V.g.: `t1_1` is the population per census tract.
+* Only numeric fields!!
 
 ## CHANGELOG
+
+#### v 0.15
+* Updated DI & CartoColor libs
+* Check field type
 
 #### v 0.14
 * Updated DI & CartoColor libs
@@ -93,4 +98,5 @@ Test it at
 
 * Add different color spaces as options
 * Add Turbo\*\*\*\*\*css support
+* Add categories support
 * Have a beer
