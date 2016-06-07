@@ -21,6 +21,8 @@ Si non confectus, non reficiat
             goMap(function () {
                 setQuery();
                 getColors();
+                getLayers();
+                getFields();
                 getDataparams(function () {
                     getScaleParams();
                     buildScales();
@@ -73,6 +75,11 @@ Si non confectus, non reficiat
                 callback instanceof Function && callback(cdb.$(this).find("span.value").get(0).innerHTML);
             });
         },
+        tog = function (e) {
+            cdb.$('input, select').toggleClass('is-disabled', !e);
+            cdb.$('input, select').attr('disabled', !e);
+            cdb.$('.dropdown').css("pointer-events", (e) ? 'auto' : 'none');
+        },
         scaleindex = 0,
         cartoColors = function () {
             var ff = window.myapp.fields,
@@ -114,7 +121,7 @@ Si non confectus, non reficiat
                 ff = window.myapp.fields;
             ff[0].value = ff[0].value.replace('api/v2/', 'api/v3/');
             try {
-                window.myapp.params = cdb.$.extend(window.myapp.params,{
+                window.myapp.params = cdb.$.extend(window.myapp.params, {
                     viz: ff[0].value,
                     layername: ff[1].value,
                     fieldname: ff[2].value,
@@ -128,18 +135,67 @@ Si non confectus, non reficiat
                     bezier: ff[9].checked,
                     luminfix: ff[10].checked
                 });
+                if(window.myapp.params.viz =='') return true;
                 window.myapp.params.sql = getSQL();
-                return false;
+                return ff[0].value == '' || ff[1].value == '' || ff[2].value == '';
             } catch (error) {
                 cdb.$('.myloader').removeClass('is-visible');
                 debugger;
+                tog(true);
                 return true;
             }
         },
-        getDataparams = function (callback) {
-            window.myapp.params.sql.execute('with b as(' + window.myapp.params.query + ') select GeometryType(the_geom_webmercator) as type, pg_typeof('+ window.myapp.params.fieldname +') as f from b limit 1').done(function (data) {
+        getLayers = function(){
+            var avalayers = window.myapp.layers.models.map(function(c){return c.attributes.layer_name}).filter(function(c){return c != void 0});
+            if (document.querySelector('#layers')==void 0){
+                a = document.createElement('datalist')
+            }
+            var a = document.querySelector('#layers'),
+                b = '';
+            if (document.querySelector('#layers')==void 0){
+                a = document.createElement('datalist');
+                a.setAttribute('id', 'layers');
+                document.body.appendChild(a);
+            } else {
+                a.innerHTML = '';
+            }
+            for (var i = 0; i < avalayers.length; i++) {
+                b += '<option value="' + avalayers[i] + '">';
+            }
+            a.innerHTML = b;
+        },
+        getFields = function () {
+            window.myapp.params.sql.execute('with b as(' + window.myapp.params.query + ') select * from b limit 1').done(function (data) {
+                if (document.querySelector('#columns')==void 0){
+                    a = document.createElement('datalist')
+                }
+                var a = document.querySelector('#columns'),
+                    b = '';
+                window.myapp.columns = Object.keys(data.rows[0]);
+                if (document.querySelector('#columns')==void 0){
+                    a = document.createElement('datalist');
+                    a.setAttribute('id', 'columns');
+                    document.body.appendChild(a);
+                } else {
+                    a.innerHTML = '';
+                }
+                for (var i = 0; i < window.myapp.columns.length; i++) {
+                    b += '<option value="' + window.myapp.columns[i] + '">';
+                }
+                a.innerHTML = b;
+            });
 
-                if (['smallint', 'integer', 'bigint', 'decimal', 'numeric', 'real', 'double precision', 'smallserial', 'serial', 'bigserial'].some(function(a){ return a == data.rows[0].f.toLowerCase() }) == false ) {
+        },
+        getDataparams = function (callback) {
+
+            if (window.myapp.params.query == '') return;
+
+            window.myapp.params.sql.execute('with b as(' + window.myapp.params.query + ') select GeometryType(the_geom_webmercator) as type, pg_typeof(' + window.myapp.params.fieldname + ') as f from b limit 1').done(function (data) {
+
+                if (data.rows.length == 0) return;
+                if (['smallint', 'integer', 'bigint', 'decimal', 'numeric', 'real', 'double precision', 'smallserial', 'serial', 'bigserial'].some(function (a) {
+                        return a == data.rows[0].f.toLowerCase()
+                    }) == false) {
                     alert('Non numeric fields are not suported');
                     return;
                 }
@@ -240,7 +296,7 @@ Si non confectus, non reficiat
                 mq.logshifted[i + c[1] - 1] = delta(f[5]);
                 f[5] += (1 - c[0]) * (log0[c[1] - i] - log0[c[1] - i - 1]);
             }
-            p.sql.execute('with b as(' + window.myapp.params.query  + ') select CDB_QuantileBins(array_agg(' + p.fieldname + '::numeric), ' + p.steps + ') as ntile, CDB_JenksBins(array_agg(' + p.fieldname + '::numeric), ' + p.steps + ') as jenks from b').done(function (data) {
+            p.sql.execute('with b as(' + window.myapp.params.query + ') select CDB_QuantileBins(array_agg(' + p.fieldname + '::numeric), ' + p.steps + ') as ntile, CDB_JenksBins(array_agg(' + p.fieldname + '::numeric), ' + p.steps + ') as jenks from b').done(function (data) {
                 mq.ntiles = data.rows[0].ntile;
                 mq.jenks = data.rows[0].jenks.filter(function (a) {
                     return a != null
@@ -251,7 +307,7 @@ Si non confectus, non reficiat
                 // v0.10
                 if (count >= 2) callback();
             });
-            p.sql.execute('with a as(' + window.myapp.params.query  + '), b as( select ' + p.fieldname + ', TRUNC((AVG(' + p.fieldname + ') - AVG(AVG(' + p.fieldname + ')) OVER ()) / trunc((STDDEV(AVG(' + p.fieldname + ')) OVER ())::numeric, 5) ) AS Bucket from a group by ' + p.fieldname + ' ), c as( select max(' + p.fieldname + ') as mx from b group by bucket order by bucket ) select array_agg(mx) as stdev from c').done(function (data) {
+            p.sql.execute('with a as(' + window.myapp.params.query + '), b as( select ' + p.fieldname + ', TRUNC((AVG(' + p.fieldname + ') - AVG(AVG(' + p.fieldname + ')) OVER ()) / trunc((STDDEV(AVG(' + p.fieldname + ')) OVER ())::numeric, 5) ) AS Bucket from a group by ' + p.fieldname + ' ), c as( select max(' + p.fieldname + ') as mx from b group by bucket order by bucket ) select array_agg(mx) as stdev from c').done(function (data) {
                 mq.stddev = data.rows[0].stdev.filter(function (a) {
                     return a != null
                 });
@@ -322,15 +378,16 @@ Si non confectus, non reficiat
                     window.myapp.cartocss[jj] += cfun(ii, qq);
                 },
                 initcss = function (jj, rr) {
+                    var layername = p.layername.replace(/ /g, '_');
                     window.myapp.cartocss[jj] = '/** ' + names[jj] + ' */\n\n' + rr.map(function (a, b) {
                         return '@color' + b + ': ' + a + ';\n'
                     }).join('');
                     if (p.fieldtype == 'polygon') {
-                        window.myapp.cartocss[jj] += '\n#' + p.layername + '{\npolygon-opacity: 0.9;\npolygon-fill: @color0;\nline-opacity: 1;\nline-width: 0.5;\nline-color: lighten(@color0,5);\n';
+                        window.myapp.cartocss[jj] += '\n#' + layername + '{\npolygon-opacity: 0.9;\npolygon-fill: @color0;\nline-opacity: 1;\nline-width: 0.5;\nline-color: lighten(@color0,5);\n';
                     } else if (p.fieldtype == 'marker') {
-                        window.myapp.cartocss[jj] += '\n#' + p.layername + '{\nmarker-fill:@color0;\nmarker-fill-opacity: 0.9;\nmarker-line-color: darken(@color0,5);\nmarker-line-width: 1;\nmarker-line-opacity: 0.9;\nmarker-width: 8;\nmarker-allow-overlap: true;\n';
+                        window.myapp.cartocss[jj] += '\n#' + layername + '{\nmarker-fill:@color0;\nmarker-fill-opacity: 0.9;\nmarker-line-color: darken(@color0,5);\nmarker-line-width: 1;\nmarker-line-opacity: 0.9;\nmarker-width: 8;\nmarker-allow-overlap: true;\n';
                     } else {
-                        window.myapp.cartocss[jj] += '\n#' + p.layername + '{\n	' + p.fieldtype + '-opacity: 1;\n	' + p.fieldtype + '-fill: @color0;';
+                        window.myapp.cartocss[jj] += '\n#' + layername + '{\n	' + p.fieldtype + '-opacity: 1;\n	' + p.fieldtype + '-fill: @color0;';
                     }
                 };
             window.myapp.cartocss = [];
@@ -420,6 +477,7 @@ Si non confectus, non reficiat
             l.innerHTML = '<span>' + fxn(data.mn) + '</span><span style="position:absolute;left:' + (margin - 5) + 'px;">' + fxn(mode) + '</span><span style="float: right;">' + fxn(data.mx) + '</span>';
         },
         setCSS = function (index) {
+            tog(false);
             var pre = cdb.L.DomUtil.create('pre', 'prettyprint lang-css');
             window.myapp.layer.set('cartocss', myapp.cartocss[index]);
             pre.id = 'cartocss';
@@ -428,6 +486,7 @@ Si non confectus, non reficiat
             document.querySelector('.mycss').appendChild(pre);
             prettyPrint();
             cdb.$('.myloader:eq(11)').removeClass('is-visible');
+            tog(true);
         },
         setQuery = function () {
             var pre = cdb.L.DomUtil.create('pre', 'prettyprint lang-sql');
@@ -446,30 +505,47 @@ Si non confectus, non reficiat
             prettyPrint();
         },
         goMap = function (callback) {
+            tog(false);
             var p = window.myapp.params,
                 viz = p.viz,
                 layername = p.layername,
                 fieldname = p.fieldname;
+            if (window.myapp.vis != void 0) delete window.myapp.vis;
             document.querySelector('#map').innerHTML = '';
-            cartodb.createVis('map', viz).done(function (vis, layers) {
+            window.myapp.vis = cartodb.createVis('map', viz);
+            window.myapp.vis.done(function (vis, layers) {
+                window.myapp.layers = layers;
+                getLayers();
                 window.myapp.layer = layers.models.filter(function (a) {
-                    return a.attributes.layer_name == layername;
+                    return a.attributes.layer_name == layername.replace(/ /g, '_');
                 })[0];
-                window.myapp.params.query = (window.myapp.layer.attributes.sql != void 0) ? window.myapp.layer.attributes.sql : vis._analysisCollection.models.filter(function (a) {
-                    return a.id == window.myapp.layer.attributes.source
-                })[0].attributes.query;
-                callback();
+                if (window.myapp.layer != void 0) {
+                    window.myapp.params.query = (window.myapp.layer.attributes.sql != void 0) ? window.myapp.layer.attributes.sql : vis._analysisCollection.models.filter(function (a) {
+                        return a.id == window.myapp.layer.attributes.source
+                    })[0].attributes.query;
+                } else {
+                    window.myapp.params.query = '';
+                };
+                tog(true);
+                if (callback != void 0) callback();
             });
         },
         setEvents = function () {
             var ff = window.myapp.fields,
                 change_field = function () {
-                    cdb.$('.myloader').addClass('is-visible');
+                    if (window.myapp.flag == true) return;
+                    window.myapp.flag = true;
                     if (getScaleParams()) return;
-                    getDataparams(function () {
-                        buildScales();
-                        setCSS(scaleindex);
+                    cdb.$('.myloader').addClass('is-visible');
+                    goMap(function () {
                         setQuery();
+                        getColors();
+                        getDataparams(function () {
+                            getScaleParams();
+                            buildScales();
+                            setCSS(scaleindex);
+                            window.myapp.flag = false;
+                        });
                     });
                 },
                 change_colors = function () {
@@ -517,9 +593,34 @@ Si non confectus, non reficiat
                     buildScales();
                     setCSS(scaleindex);
                 };
-            ff[0].onkeyup = init;
-            ff[1].onkeyup = change_field;
-            ff[2].onkeyup = change_field;
+            ff[0].onkeyup = ff[0].onchange = function () {
+                ff[1].value = '';
+                ff[2].value = '';
+                getScaleParams();
+                if(window.myapp.params.viz !='')goMap();
+            }
+            ff[0].onclick = ff[0].onfocus = function(){this.select()}
+            ff[1].onkeyup = ff[1].onchange  = ff[1].oninput = ff[1].onautocomplete = function () {
+                ff[2].value = '';
+                getScaleParams();
+                window.myapp.layer = window.myapp.layers.models.filter(function (a) {
+                    return a.attributes.layer_name == myapp.params.layername.replace(/ /g, '_');
+                })[0];
+                if (window.myapp.layer != void 0) {
+                    window.myapp.params.query = (window.myapp.layer.attributes.sql != void 0) ? window.myapp.layer.attributes.sql : vis._analysisCollection.models.filter(function (a) {
+                        return a.id == window.myapp.layer.attributes.source
+                    })[0].attributes.query;
+                    getFields();
+                } else {
+                    window.myapp.params.query = '';
+                };
+            };
+            ff[2].onkeyup = ff[2].onchange = ff[2].oninput = ff[2].onautocomplete = function () {
+                var val = window.myapp.columns.some(function (a) {
+                    return a.toLowerCase() == ff[2].value.toLowerCase()
+                })
+                if (val) change_field();
+            }
             ff[3].onchange = flipscale;
             ff[4].onkeyup = change_colors;
             ff[5].onchange = ff[5].onkeyup = change_colors;
