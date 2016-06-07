@@ -23,6 +23,13 @@ Test it at
 
 ## CHANGELOG
 
+#### v 0.16
+* Added autocomplete for layers and fields
+* Fixed layers with spaces in their names
+* Fixed the "double map" issue
+* Evil things
+* Minor fixes
+
 #### v 0.15
 * Updated DI & CartoColor libs
 * Check field type
