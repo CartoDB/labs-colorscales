@@ -67,7 +67,7 @@ Si non confectus, non reficiat
             });
             for (var i = 0; i < current.length; i++) {
                 val = window.myapp.params[current[i]];
-                if (val == void 0 || val == '' || val = 'CUSTOM') continue;
+                if (val == void 0 || val == '' || val == 'CUSTOM') continue;
                 if (current[i] == 'viz' || current[i] == 'scale') val = encodeURIComponent(val);
                 params += (params == '') ? '?' : '&';
                 params += current[i] + '=' + val;
