@@ -10,13 +10,78 @@ Si non confectus, non reficiat
 
     window.myapp = window.myapp || {};
 
-    var init = function () {
+    var getURLParameter = function (name) {
+            return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search) || [null, ''])[1].replace(/\+/g, '%20')) || null;
+        },
+        getInitParams = function () {
+            var ff = window.myapp.fields,
+                p = {
+                    viz: decodeURIComponent(getURLParameter('viz')),
+                    layername: getURLParameter('layername'),
+                    fieldname: getURLParameter('fieldname'),
+                    fieldtype: getURLParameter('fieldtype'),
+                    flip: getURLParameter('flip'),
+                    scale: decodeURIComponent(getURLParameter('scale')),
+                    scalename: getURLParameter('scalename'),
+                    steps: getURLParameter('steps'),
+                    min: getURLParameter('min'),
+                    poi: getURLParameter('poi'),
+                    max: getURLParameter('max'),
+                    bezier: getURLParameter('bezier'),
+                    luminfix: getURLParameter('luminfix'),
+                    ramp: getURLParameter('ramp')
+                };
+
+            window.myapp.params = {};
+
+            if (p.viz != 'null') ff[0].value = p.viz;
+            if (p.layername != void 0) ff[1].value = p.layername;
+            if (p.fieldname != void 0) ff[2].value = p.fieldname;
+            if (p.fieldtype != void 0) document.querySelector('select').value = p.fieldtype;
+            if (p.flip != void 0) ff[3].checked = p.flip;
+            if (p.scalename != void 0) {
+                window.myapp.params.scalename = p.scalename;
+            } else if (p.scale != void 0) {
+                window.myapp.params.scale = p.scale;
+                ff[4].value = p.scale;
+            }
+            if (p.steps != void 0) ff[5].value = p.steps;
+            if (p.min != void 0) ff[6].value = p.min;
+            if (p.poi != void 0) ff[7].value = p.poi;
+            if (p.max != void 0) ff[8].value = p.max;
+            if (p.bezier != void 0) ff[9].checked = p.bezier;
+            if (p.luminfix != void 0) ff[10].checked = p.luminfix;
+            if (p.ramp != void 0) {
+                cdb.$('.u-iBlock').find('input[value=' + p.ramp + ']').get(0).checked = true;
+                scaleindex = p.ramp;
+            }
+            ff[11].value = window.location.href;
+        },
+        setURL = function () {
+            var valid = ["scalename", "viz", "layername", "fieldname", "fieldtype", "flip", "scale", "steps", "min", "poi", "max", "bezier", "luminfix", "ramp"],
+                current = Object.keys(window.myapp.params),
+                params = '',
+                val;
+            current = current.filter(function (a) {
+                return valid.indexOf(a) > -1
+            });
+            for (var i = 0; i < current.length; i++) {
+                val = window.myapp.params[current[i]];
+                if (val == void 0 || val == '' || val = 'CUSTOM') continue;
+                if (current[i] == 'viz' || current[i] == 'scale') val = encodeURIComponent(val);
+                params += (params == '') ? '?' : '&';
+                params += current[i] + '=' + val;
+            }
+            window.history.replaceState('Object', 'Title', params);
+        },
+        init = function () {
             cdb.$('.myloader').addClass('is-visible');
             window.myapp.fields = document.querySelector('.leftpanel').querySelectorAll('input');
             window.myapp.init = true;
+            // fill the fields!
+            getInitParams();
             cartoColors();
             getScaleParams();
-            // v0.10
             document.querySelectorAll('.CDB-Box-Modal.scalebox')[12].style.display = 'none';
             goMap(function () {
                 setQuery();
@@ -28,12 +93,13 @@ Si non confectus, non reficiat
                     buildScales();
                     setCSS(scaleindex);
                     setEvents();
+                    setURL();
                 });
             });
         },
         createDropDown = function (id, callback) {
             var source = cdb.$("#" + id),
-                selected = source.find("option[selected]"),
+                selected = source.find("option[selected]").get(0), // || source.find("option").get(0),
                 options = cdb.$("option", source),
                 makescale = function (text, val) {
                     var colors = val.split(','),
@@ -47,17 +113,36 @@ Si non confectus, non reficiat
                         scale.appendChild(item);
                     }
                     return scale.outerHTML;
-                };
+                },
+                val, txt;
+            if (selected != void 0) {
+                val = selected.value;
+                txt = selected.innerText;
+                window.myapp.params.scalename = txt;
+            } else if (window.myapp.params.scale != void 0 && window.myapp.params.scale != "null"){
+                val = window.myapp.params.scale;
+                txt = 'CUSTOM';
+            } else{
+                selected = source.find("option").get(0);
+                val = selected.value;
+                txt = selected.innerText;
+            }
+            window.myapp.fields[4].value = val;
             cdb.$("body").append('<dl id="target" class="dropdown"></dl>')
-            cdb.$("#target").append('<dt><a href="#">' + selected.text() +
-                '<span class="value">' + selected.val() +
+            cdb.$("#target").append('<dt><a href="#">' + txt +
+                '<span class="value">' + val +
                 '</span></a></dt>')
             cdb.$("#target").append('<dd><ul></ul></dd>')
             options.each(function () {
-                cdb.$("#target dd ul").append('<li><a href="#">' + makescale(cdb.$(this).text(), cdb.$(this).val()) + '<span class="value">' + cdb.$(this).val() + '</span></a></li>');
+                cdb.$("#target dd ul").append('<li><a href="#"  title="' + cdb.$(this).text() + '">' + makescale(cdb.$(this).text(), cdb.$(this).val()) + '<span class="value">' + cdb.$(this).val() + '</span></a></li>');
             });
             source.replaceWith(cdb.$("#target"));
-            cdb.$(".dropdown dt a").html(cdb.$("#target").find("a")[1].innerHTML);
+            if (cdb.$("#target").find("a[title=" + txt + "]")[0] != void 0) {
+                cdb.$(".dropdown dt a").html(cdb.$("#target").find("a[title=" + txt + "]")[0].innerHTML);
+            }else{
+                cdb.$(".dropdown dt a").html(txt);
+            }
+
             cdb.$(".dropdown dt a").click(function () {
                 cdb.$(".dropdown dd ul").toggle();
             });
@@ -72,6 +157,7 @@ Si non confectus, non reficiat
                 cdb.$(".dropdown dd ul").hide();
                 var source = cdb.$("#target");
                 source.val(cdb.$(this).find("span.value").html());
+                window.myapp.params.scalename = cdb.$(this).find("span.value").get(0).getAttribute('title') || void 0;
                 callback instanceof Function && callback(cdb.$(this).find("span.value").get(0).innerHTML);
             });
         },
@@ -101,12 +187,17 @@ Si non confectus, non reficiat
                 opt = document.createElement('option');
                 opt.value = colorbrewer[colors[i]]['7'];
                 opt.text = colors[i];
+                if (window.myapp.params.scalename == opt.text) {
+                    opt.selected = true;
+                    opt.setAttribute("selected", "selected");
+                }
                 sel.appendChild(opt);
             }
             createDropDown('cartoselect', function () {
                 var selection = cdb.$('#target').find("span.value").html();
                 ff[4].value = (ff[3].checked) ? selection.split(',').reverse() : selection;
                 change_colors();
+                setURL();
             });
         },
         getScaleParams = function () {
@@ -123,7 +214,7 @@ Si non confectus, non reficiat
             try {
                 window.myapp.params = cdb.$.extend(window.myapp.params, {
                     viz: ff[0].value,
-                    layername: ff[1].value,
+                    layername: ff[1].value.replace(/\s+/g, '_'),
                     fieldname: ff[2].value,
                     fieldtype: document.querySelector('select').value,
                     flip: ff[3].checked,
@@ -135,7 +226,7 @@ Si non confectus, non reficiat
                     bezier: ff[9].checked,
                     luminfix: ff[10].checked
                 });
-                if(window.myapp.params.viz =='') return true;
+                if (window.myapp.params.viz == '') return true;
                 window.myapp.params.sql = getSQL();
                 return ff[0].value == '' || ff[1].value == '' || ff[2].value == '';
             } catch (error) {
@@ -145,14 +236,18 @@ Si non confectus, non reficiat
                 return true;
             }
         },
-        getLayers = function(){
-            var avalayers = window.myapp.layers.models.map(function(c){return c.attributes.layer_name}).filter(function(c){return c != void 0});
-            if (document.querySelector('#layers')==void 0){
+        getLayers = function () {
+            var avalayers = window.myapp.layers.models.map(function (c) {
+                return c.attributes.layer_name
+            }).filter(function (c) {
+                return c != void 0
+            });
+            if (document.querySelector('#layers') == void 0) {
                 a = document.createElement('datalist')
             }
             var a = document.querySelector('#layers'),
                 b = '';
-            if (document.querySelector('#layers')==void 0){
+            if (document.querySelector('#layers') == void 0) {
                 a = document.createElement('datalist');
                 a.setAttribute('id', 'layers');
                 document.body.appendChild(a);
@@ -166,13 +261,13 @@ Si non confectus, non reficiat
         },
         getFields = function () {
             window.myapp.params.sql.execute('with b as(' + window.myapp.params.query + ') select * from b limit 1').done(function (data) {
-                if (document.querySelector('#columns')==void 0){
+                if (document.querySelector('#columns') == void 0) {
                     a = document.createElement('datalist')
                 }
                 var a = document.querySelector('#columns'),
                     b = '';
                 window.myapp.columns = Object.keys(data.rows[0]);
-                if (document.querySelector('#columns')==void 0){
+                if (document.querySelector('#columns') == void 0) {
                     a = document.createElement('datalist');
                     a.setAttribute('id', 'columns');
                     document.body.appendChild(a);
@@ -581,6 +676,7 @@ Si non confectus, non reficiat
                     if (getScaleParams()) return;
                     buildScales();
                     setCSS(scaleindex);
+                    setURL();
                 },
                 change_cartocolor = function () {
                     ff[4].value = (ff[3].checked) ? document.querySelector('#cartoselect').value.split(',').reverse() : document.querySelector('#cartoselect').value;
@@ -597,10 +693,12 @@ Si non confectus, non reficiat
                 ff[1].value = '';
                 ff[2].value = '';
                 getScaleParams();
-                if(window.myapp.params.viz !='')goMap();
+                if (window.myapp.params.viz != '') goMap();
             }
-            ff[0].onclick = ff[0].onfocus = function(){this.select()}
-            ff[1].onkeyup = ff[1].onchange  = ff[1].oninput = ff[1].onautocomplete = function () {
+            ff[0].onclick = ff[0].onfocus = function () {
+                this.select()
+            }
+            ff[1].onkeyup = ff[1].onchange = ff[1].oninput = ff[1].onautocomplete = function () {
                 ff[2].value = '';
                 getScaleParams();
                 window.myapp.layer = window.myapp.layers.models.filter(function (a) {
@@ -637,10 +735,12 @@ Si non confectus, non reficiat
             //cdb.$('input[type=checkbox]').on('change', change_colorspars);
             cdb.$('input[type=radio]').on('change', function () {
                 scaleindex = document.querySelector('input[type=radio]:checked').value;
+                window.myapp.params.ramp = scaleindex;
                 setCSS(scaleindex);
             })
             cdb.$('#geoselect').on('change', change_geom);
             cdb.$('#cartoselect').on('change', change_cartocolor);
+            cdb.$('input').on('focus input autocomplete change keyup', setURL);
         };
 
     window.onload = init;

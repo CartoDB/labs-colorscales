@@ -23,6 +23,22 @@ Test it at
 
 ## CHANGELOG
 
+#### v 0.17
+* Fixed [issue #27](https://github.com/CartoDB/labs-colorscales/issues/27)
+* Added shareable URL!!! [issue #26](https://github.com/CartoDB/labs-colorscales/issues/26). Available parameters:
+  * scalename: CartoColor scale name
+  * viz: url to the viz.json, escaped
+  * layername: name of the layer to study
+  * fieldname: field to study
+  * fieldtype: geometry type to style
+  * flip: true to flip the scale
+  * scale: hex color list, escaped (ignored if the scalename is set)
+  * steps: num of buckets
+  * bezier: true to enable
+  * luminfix: true to enable
+  * ramp: index of the selected ramp (0:original, 1:interpolated, 2:log-start, 3:log-end, 4:log-center, 5:log-poi, 6:n-tiles, 7:jenks, 9:stddev)
+
+
 #### v 0.16
 * Added autocomplete for layers and fields
 * Fixed layers with spaces in their names
