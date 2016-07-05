@@ -338,6 +338,7 @@ var colorbrewer_tags = {
   "YlOrRd": { "tags": ["quantitative"] }
 }
 
+/*
 var colorbrewer = require('colorbrewer');
 
 // augment colorbrewer with tags
@@ -354,6 +355,8 @@ for (var r in colorbrewer) {
 
   cartocolor['cb_' + r] = reversedRamps;
 }
+
+*/
 
 if (typeof define === "function" && define.amd) {
     define(cartocolor);
