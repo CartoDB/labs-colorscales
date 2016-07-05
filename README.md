@@ -23,6 +23,9 @@ Test it at
 
 ## CHANGELOG
 
+#### v 0.18
+* Updated Cartocolors to v 2.0.2
+
 #### v 0.17
 * Fixed [issue #27](https://github.com/CartoDB/labs-colorscales/issues/27)
 * Added shareable URL!!! [issue #26](https://github.com/CartoDB/labs-colorscales/issues/26). Available parameters:
