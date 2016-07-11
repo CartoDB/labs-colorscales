@@ -5,11 +5,12 @@ Cook here your color scales, playing with different color ramps, quantification 
 
 Just choose one of your CartoDB maps as test bed, and play. This tool lets you check how your color scale performs with your real data and generates the desired \*\*\*\*\*CSS, so you can copy&paste it to CartoDB editor and generate the desired **choropleth**.
 
-![img](http://storage8.static.itmages.com/i/16/0408/h_1460147194_2770683_744e85779a.png)
+![img](http://pix.toile-libre.org/upload/original/1468245311.png)
+
 
 Test it at
 
-### http://cartodb.github.io/labs-colorscales/
+## http://cartodb.github.io/labs-colorscales/
 
 
 
