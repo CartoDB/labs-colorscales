@@ -182,10 +182,11 @@ Si non confectus, non reficiat
                         setCSS(scaleindex);
                     });
                 };
-
+/*
             colors.sort(function(a, b){
                 return colorbrewer[b].tags[0].length - colorbrewer[a].tags[0].length;
             });
+*/
 
             if (sel == void 0) return;
             for (var i = 0; i < colors.length; i++) {
