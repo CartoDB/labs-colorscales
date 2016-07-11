@@ -23,6 +23,11 @@ Test it at
 
 ## CHANGELOG
 
+#### v 0.19b
+* Added Colorbrewer2 scales
+* Fixed color orderning
+* Fixed combo scales width
+
 #### v 0.19
 * Readded Jenks
 
