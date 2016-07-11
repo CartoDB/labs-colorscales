@@ -23,6 +23,9 @@ Test it at
 
 ## CHANGELOG
 
+#### v 0.19
+* Readded Jenks
+
 #### v 0.18
 * Updated Cartocolors to v 2.0.2
 

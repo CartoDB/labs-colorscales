@@ -82,7 +82,7 @@ Si non confectus, non reficiat
             getInitParams();
             cartoColors();
             getScaleParams();
-            document.querySelectorAll('.CDB-Box-Modal.scalebox')[12].style.display = 'none';
+            // document.querySelectorAll('.CDB-Box-Modal.scalebox')[12].style.display = 'none';
             goMap(function () {
                 setQuery();
                 getColors();
