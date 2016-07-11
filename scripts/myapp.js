@@ -103,13 +103,14 @@ Si non confectus, non reficiat
                 options = cdb.$("option", source),
                 makescale = function (text, val) {
                     var colors = val.split(','),
+                        w = 170/colors.length,
                         scale = document.createElement('span'),
                         item;
                     scale.setAttribute('style', "display:flex; justifyContent: center; height: 25px;");
                     scale.setAttribute('title', text);
                     for (var i = 0; i < colors.length; i++) {
                         item = document.createElement('div')
-                        item.setAttribute('style', "background:" + colors[i] + "; borderRadius:4px; height: 25px; width:22.86px;");
+                        item.setAttribute('style', "background:" + colors[i] + "; borderRadius:4px; height: 25px; width:"+w+"px;");
                         scale.appendChild(item);
                     }
                     return scale.outerHTML;
@@ -182,10 +183,11 @@ Si non confectus, non reficiat
                         setCSS(scaleindex);
                     });
                 };
-
+/*
             colors.sort(function(a, b){
                 return colorbrewer[b].tags[0].length - colorbrewer[a].tags[0].length;
             });
+*/
 
             if (sel == void 0) return;
             for (var i = 0; i < colors.length; i++) {
