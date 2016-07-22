@@ -92,6 +92,7 @@ Si non confectus, non reficiat
                     getScaleParams();
                     buildScales();
                     setCSS(scaleindex);
+                    initModal();
                     setEvents();
                     setURL();
                 });
@@ -103,14 +104,14 @@ Si non confectus, non reficiat
                 options = cdb.$("option", source),
                 makescale = function (text, val) {
                     var colors = val.split(','),
-                        w = 170/colors.length,
+                        w = 170 / colors.length,
                         scale = document.createElement('span'),
                         item;
                     scale.setAttribute('style', "display:flex; justifyContent: center; height: 25px;");
                     scale.setAttribute('title', text);
                     for (var i = 0; i < colors.length; i++) {
                         item = document.createElement('div')
-                        item.setAttribute('style', "background:" + colors[i] + "; borderRadius:4px; height: 25px; width:"+w+"px;");
+                        item.setAttribute('style', "background:" + colors[i] + "; borderRadius:4px; height: 25px; width:" + w + "px;");
                         scale.appendChild(item);
                     }
                     return scale.outerHTML;
@@ -120,10 +121,10 @@ Si non confectus, non reficiat
                 val = selected.value;
                 txt = selected.innerText;
                 window.myapp.params.scalename = txt;
-            } else if (window.myapp.params.scale != void 0 && window.myapp.params.scale != "null"){
+            } else if (window.myapp.params.scale != void 0 && window.myapp.params.scale != "null") {
                 val = window.myapp.params.scale;
                 txt = 'CUSTOM';
-            } else{
+            } else {
                 selected = source.find("option").get(0);
                 val = selected.value;
                 txt = selected.innerText;
@@ -140,7 +141,7 @@ Si non confectus, non reficiat
             source.replaceWith(cdb.$("#target"));
             if (cdb.$("#target").find("a[title=" + txt + "]")[0] != void 0) {
                 cdb.$(".dropdown dt a").html(cdb.$("#target").find("a[title=" + txt + "]")[0].innerHTML);
-            }else{
+            } else {
                 cdb.$(".dropdown dt a").html(txt);
             }
 
@@ -183,11 +184,11 @@ Si non confectus, non reficiat
                         setCSS(scaleindex);
                     });
                 };
-/*
-            colors.sort(function(a, b){
-                return colorbrewer[b].tags[0].length - colorbrewer[a].tags[0].length;
-            });
-*/
+            /*
+                        colors.sort(function(a, b){
+                            return colorbrewer[b].tags[0].length - colorbrewer[a].tags[0].length;
+                        });
+            */
 
             if (sel == void 0) return;
             for (var i = 0; i < colors.length; i++) {
@@ -418,25 +419,6 @@ Si non confectus, non reficiat
                 // v0.10
                 if (count >= 2) callback();
             });
-            // v0.10
-            /*p.sql.execute('with b as(' + window.myapp.layer.attributes.sql + '), c as (select round(' + p.fieldname + '*' + tolerance + ')/' + tolerance + ' as v from b) select distinct(v) v from c where v is not null').done(function (data) {
-                try {
-                    tmp = data.rows.map(function (a) {
-                        return a.v
-                    });
-                    mq.ckmeans = ss.ckmeans(tmp, p.steps).map(function (a) {
-                        return a[0]
-                    });
-                } catch (errors) {
-                    console.log(errors);
-                    debugger;
-                    mq.ckmeans = [];
-                }
-                count += 1;
-                if (count >= 3) callback();
-            }); */
-
-
         },
         buildScales = function () {
             var
@@ -631,6 +613,149 @@ Si non confectus, non reficiat
                 tog(true);
                 if (callback != void 0) callback();
             });
+        },
+        initModal = function () {
+            var modal = document.getElementById('myModal'),
+                btn = document.getElementById("ownscale"),
+                span = document.getElementsByClassName("close")[0],
+                colorinput = document.querySelector('input[type=color]'),
+                colortext = document.querySelector('#colorhex'),
+                color,
+                steps,
+                flag = false,
+                seq = function (c) {
+                    var colors = [
+                        c.darken(3),
+                        c.darken(2),
+                        c.darken(1),
+                        c,
+                        c.brighten(1),
+                        c.brighten(2),
+                        c.brighten(3)
+                        ];
+                    return colors.splice((7 - steps) / 2, steps)
+                },
+                div = function (c) {
+                    var ca = c.hsl(),
+                        c2,
+                        s1, s2,
+                        gr = '#ccc';
+                    ca[0] = (ca[0] + 180) % 360;
+                    c2 = chroma(ca, 'hsl');
+                    switch (steps) {
+                    case 3:
+                        return chroma.bezier([c, gr, c2]).scale().mode('lab').colors(3);
+                        break;
+                    case 5:
+                        s1 = chroma.scale([c, gr]).mode('lab').correctLightness(true).colors(3);
+                        s2 = chroma.scale([gr, c2]).mode('lab').correctLightness(true).colors(3);
+                        s1.pop();
+                        return s1.concat(s2);
+
+                        break;
+                    case 7:
+                        s1 = chroma.scale([c, gr]).mode('lab').correctLightness(true).colors(4);
+                        s2 = chroma.scale([gr, c2]).mode('lab').correctLightness(true).colors(4);
+                        s1.pop();
+                        return s1.concat(s2);
+                        break;
+                    }
+
+                },
+                outli = function (c) {
+                    var carray = c.hsl(),
+                        c2,
+                        cc,
+                        colors,
+                        d = div(c);
+                    carray[0] = (carray[0] + 180) % 360;
+                    c2 = chroma(carray, 'hsl');
+                    cc = [c, c2];
+                    if (steps == 3){
+                        return [c, '#ccc', c2];
+                    }else{
+                        colors = chroma.scale(['#aaa', '#ddd']).mode('lab').correctLightness(true).colors(steps-2);
+                        colors = colors.map(function (a, b) {
+                            return chroma.mix(a, d[b+7-steps], 0.1)
+                        })
+                        return [c].concat(colors).concat([c2]);
+                    }
+                },
+                crun = function (e) {
+                    var val = (e.target) ? e.target.value : e;
+                    steps = document.querySelector('#seedsteps').value*1;
+                    color = chroma(val);
+                    var seqc = seq(color),
+                        divc = div(color),
+                        outc = outli(color),
+                        getSca = function (c) {
+                            var txt = '';
+                            for (var i = 0; i < c.length; i++) {
+                                txt += '<div style="height:40px;width:'+(100/steps)+'%;background:' + c[i] + ';" title="' + c[i] + '"></div>';
+                            }
+                            return txt;
+                        };
+                    document.querySelector('#seq').innerHTML = getSca(seqc);
+                    document.querySelector('#diver').innerHTML = getSca(divc);
+                    document.querySelector('#outli').innerHTML = getSca(outc);
+                    document.querySelector('#seq-s').value = seqc;
+                    document.querySelector('#div-s').value = divc;
+                    document.querySelector('#out-s').value = outc;
+                    if (flag == true) {
+                        flag = false;
+                        return;
+                    }
+                    colortext.value = val;
+                },
+                goScales = function(selection){
+                    var ff = window.myapp.fields;
+                    ff[4].value = (ff[3].checked) ? selection.split(',').reverse() : selection;
+                    ff[5].value = steps;
+                    cdb.$('.myloader').addClass('is-visible');
+                    cdb.$('.myloader:eq(0)').removeClass('is-visible');
+                    modal.style.display = "none";
+                    if (getScaleParams()) return;
+                    getColors();
+                    getQuants(function () {
+                        buildScales();
+                        setCSS(scaleindex);
+                    });
+                    setURL();
+                };
+            btn.onclick = function () {
+                modal.style.display = "block";
+            };
+            span.onclick = function () {
+                modal.style.display = "none";
+            };
+            window.onclick = function (event) {
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                }
+            };
+            colorinput.onchange = colorinput.oninput = crun;
+            document.querySelector('#seedsteps').onchange = function(){crun(colorinput.value)};
+            colortext.onchange = colortext.oninput = colortext.onkeyup = function () {
+                var matches = this.value.match(/#[a-f0-9]{6}/g);
+                if (matches == void 0 || matches.length > 1) return;
+                flag = true;
+                try {
+                    colorinput.value = this.value;
+                    crun(this.value);
+                } catch (error) {
+                    console.log(error);
+                }
+            };
+            document.querySelector('#go-seq').onclick = function(){
+                goScales(document.querySelector('#seq-s').value);
+            };
+            document.querySelector('#go-div').onclick = function(){
+                goScales(document.querySelector('#div-s').value);
+            };
+            document.querySelector('#go-out').onclick = function(){
+                goScales(document.querySelector('#out-s').value);
+            };
+            crun('#3AA9E3');
         },
         setEvents = function () {
             var ff = window.myapp.fields,

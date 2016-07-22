@@ -12,8 +12,6 @@ Test it at
 
 ## http://cartodb.github.io/labs-colorscales/
 
-
-
 ## NOTES
 
 * Colors not supported as of today:
@@ -23,6 +21,12 @@ Test it at
 * Only numeric fields!!
 
 ## CHANGELOG
+
+#### v 0.20
+* Bassed on [this lesson at CARTO academy](https://carto.com/academy/courses/intermediate-design/choose-colors-2/), added wizard to generate scales from an unique seed color:
+
+![img](http://pix.toile-libre.org/upload/original/1469185796.png)
+
 
 #### v 0.19b
 * Added Colorbrewer2 scales
