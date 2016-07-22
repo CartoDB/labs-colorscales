@@ -414,6 +414,7 @@ Si non confectus, non reficiat
                 mq.stddev = data.rows[0].stdev.filter(function (a) {
                     return a != null
                 });
+                mq.stddev.pop();
                 window.myapp.ramps.stddev = window.myapp.colorscale.colors(mq.stddev.length);
                 count += 1;
                 // v0.10

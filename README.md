@@ -22,6 +22,9 @@ Test it at
 
 ## CHANGELOG
 
+#### v 0.20b
+* Fixed extra bucket in StdDev ramp
+
 #### v 0.20
 * Bassed on [this lesson at CARTO academy](https://carto.com/academy/courses/intermediate-design/choose-colors-2/), added wizard to generate scales from an unique seed color:
 
