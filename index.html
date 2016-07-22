@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="./themes/css/myapp.css" />
     <link rel="stylesheet" href="./scripts/prettify/prettify.css" />
     <link href="//cartodb-libs.global.ssl.fastly.net/cartodbui/assets/3.23.24/favicons/favicon.ico?1443603334" rel="shortcut icon" type="image/vnd.microsoft.icon" />
-<!--    <script src="./scripts/require.js"></script>-->
+    <!--    <script src="./scripts/require.js"></script>-->
     <script src="./scripts/colorbrewer.js"></script>
     <script src="./scripts/chroma.js"></script>
     <script src="./scripts/prettify/prettify.js"></script>
@@ -74,12 +74,18 @@
                     <label class="u-iBlock u-lSpace">Flip</label>
                 </div>
                 <div class="u-tSpace-xl CDB-Text CDB-Fieldset">
+
+
                     <p class="CDB-Legend CDB-Text is-semibold CDB-Size-medium u-rSpace--m">Original scale</p>
-                    <input type="text" name="text" value="['#f6d2a9','#f5b78e','#f19c7c','#ea8171','#dd686c','#ca5268','#b13f64']" class="CDB-InputText">
+                    <input type="text" name="text" value="['#f6d2a9','#f5b78e','#f19c7c','#ea8171','#dd686c','#ca5268','#b13f64']" class="CDB-InputText" style="flex-shrink: 3;">
+                    <button class="CDB-Button CDB-Button--primary CDB-Button--icon" style='float:right' title='Create scale from seed color' onclick="alert('ok')" id='ownscale'>
+                        <i class="CDB-IconFont CDB-IconFont-drop CDB-Size-medium"></i>
+                    </button>
+
                 </div>
                 <div class="u-tSpace-xl CDB-Text CDB-Fieldset">
                     <p class="CDB-Legend CDB-Text is-semibold CDB-Size-medium u-rSpace--m">Number of buckets</p>
-                    <input type="number" min=3 max=100 step=1 value=7 class="CDB-InputText">
+                    <input type="number" min=3 max=100 step=1 value=7 class="CDB-InputText" style="flex-shrink: 2;">
                 </div>
                 <div class="myscale" title="Output scale"></div>
             </div>
@@ -147,7 +153,7 @@
                         </div>
                     </div>
                 </div>
-               <div class="u-tSpace-xl CDB-Text CDB-Fieldset">
+                <div class="u-tSpace-xl CDB-Text CDB-Fieldset">
                     <p class="CDB-Legend CDB-Text is-semibold CDB-Size-medium u-rSpace--m">Original URL</p>
                     <input type="text" name="text" class="CDB-InputText" readonly>
                 </div>
@@ -274,6 +280,64 @@
         </div>
     </div>
     <div class='attrib'>
-        <p class="CDB-Text CDB-Size-small">CartoDB Color Scales Tool v0.19b by <a href="https://github.com/AbelVM" target=_blank>AbelVM</a> 2016-07-11</p>
+        <p class="CDB-Text CDB-Size-small">CartoDB Color Scales Tool v0.20 by <a href="https://github.com/AbelVM" target=_blank>AbelVM</a> 2016-07-22</p>
     </div>
+
+    <!-- The Modal -->
+    <div id="myModal" class="modal">
+
+        <!-- Modal content -->
+        <div class="modal-content">
+            <span class="close">x</span>
+            <div class="CDB-Box-Modal scalebox">
+                <div class="CDB-HeaderInfo">
+                    <div class="CDB-HeaderInfo-Inner CDB-Text">
+                        <div class="CDB-HeaderInfo-Title u-bSpace--m">
+                            <h2 class="CDB-Text CDB-HeaderInfo-TitleText CDB-Size-large">Generate a scale from a seed color</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="u-tSpace-xl CDB-Text CDB-Fieldset">
+                    <p class="CDB-Legend CDB-Text is-semibold CDB-Size-medium u-rSpace--m">Seed</p>
+                    <input type=color title="Color picker" placeholder="#3AA9E3" value="#3AA9E3" style="background:white;border-radius:4px;min-width:20px">&nbsp;
+                    <input type="text" name="text" placeholder="Hex Color" class="CDB-InputText CDB-Text" value="#3AA9E3" id='colorhex'>&nbsp;
+                    <select class="CDB-SelectFake CDB-Text" title="Number of buckets" id="seedsteps">
+                        <option value=3>3</option>
+                        <option value=5>5</option>
+                        <option value=7 selected>7</option>
+                    </select>
+                </div>
+
+                <div class="u-tSpace-xl CDB-Text CDB-Fieldset">
+                    <p class="CDB-Legend CDB-Text is-semibold CDB-Size-medium u-rSpace--m">Sequential</p>
+                    <input type="text" name="text" class="CDB-InputText" id="seq-s">
+                    <button class="CDB-Button CDB-Button--primary CDB-Button--icon" style='float:right' title='Use sequential scale' id='go-seq'>
+                        <i class="CDB-IconFont CDB-IconFont-arrowNext CDB-Size-medium"></i>
+                    </button>
+                </div>
+                <div class='scale' id='seq'></div>
+
+                <div class="u-tSpace-xl CDB-Text CDB-Fieldset">
+                    <p class="CDB-Legend CDB-Text is-semibold CDB-Size-medium u-rSpace--m">Divergent</p>
+                    <input type="text" name="text" class="CDB-InputText" id="div-s">
+                    <button class="CDB-Button CDB-Button--primary CDB-Button--icon" style='float:right' title='Use divergent scale' id='go-div'>
+                        <i class="CDB-IconFont CDB-IconFont-arrowNext CDB-Size-medium"></i>
+                    </button>
+                </div>
+                <div class='scale' id='diver'></div>
+
+                <div class="u-tSpace-xl CDB-Text CDB-Fieldset">
+                    <p class="CDB-Legend CDB-Text is-semibold CDB-Size-medium u-rSpace--m">Outliers</p>
+                    <input type="text" name="text" class="CDB-InputText" id="out-s">
+                    <button class="CDB-Button CDB-Button--primary CDB-Button--icon" style='float:right' title='Use outliers scale' id='go-out'>
+                        <i class="CDB-IconFont CDB-IconFont-arrowNext CDB-Size-medium"></i>
+                    </button>
+                </div>
+                <div class='scale' id='outli'></div>
+
+            </div>
+        </div>
+
+    </div>
+
 </body>

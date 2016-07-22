@@ -23,6 +23,11 @@ Test it at
 
 ## CHANGELOG
 
+#### v 0.20
+* Added wizard to generate scales from an unique seed color:
+
+
+
 #### v 0.19b
 * Added Colorbrewer2 scales
 * Fixed color orderning
