@@ -12,8 +12,6 @@ Test it at
 
 ## http://cartodb.github.io/labs-colorscales/
 
-
-
 ## NOTES
 
 * Colors not supported as of today:
@@ -25,8 +23,9 @@ Test it at
 ## CHANGELOG
 
 #### v 0.20
-* Added wizard to generate scales from an unique seed color:
+* Bassed on [this lesson at CARTO academy](https://carto.com/academy/courses/intermediate-design/choose-colors-2/), added wizard to generate scales from an unique seed color:
 
+![img](http://pix.toile-libre.org/upload/original/1469185796.png)
 
 
 #### v 0.19b
