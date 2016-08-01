@@ -623,6 +623,7 @@ Si non confectus, non reficiat
                 colortext = document.querySelector('#colorhex'),
                 helix = document.querySelector('#helix'),
                 rotations = document.querySelector('#rotations'),
+                gamma = document.querySelector('#gamma'),
                 color,
                 steps,
                 flag = false,
@@ -644,7 +645,7 @@ Si non confectus, non reficiat
                     ch = chroma.cubehelix()
                         .start(h)
                         .rotations(rotations.value*1)
-                        .gamma(0.7)
+                        .gamma(gamma.value*1)
                         .lightness([l0, l1])
                     .scale() // convert to chroma.scale
                         .correctLightness()
@@ -749,7 +750,7 @@ Si non confectus, non reficiat
                     modal.style.display = "none";
                 }
             };
-            helix.onchange = rotations.onchange = rotations.oninput = function () {
+            helix.onchange = rotations.onchange = rotations.oninput = gamma.onchange = gamma.oninput = function () {
                 crun(colorinput.value)
             };
             colorinput.onchange = colorinput.oninput = crun;
