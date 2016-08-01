@@ -22,6 +22,9 @@ Test it at
 
 ## CHANGELOG
 
+#### v 0.21b
+* Added gamma tweaking for cube-helix
+
 #### v 0.21
 * Added [Cube-helix](http://www.mrao.cam.ac.uk/~dag/CUBEHELIX/) color scheme to the scales generator wizard
 * Updated Chroma.js to 1.2.0
