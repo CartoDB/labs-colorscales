@@ -280,7 +280,7 @@
         </div>
     </div>
     <div class='attrib'>
-        <p class="CDB-Text CDB-Size-small">CartoDB Color Scales Tool v0.20b by <a href="https://github.com/AbelVM" target=_blank>AbelVM</a> 2016-07-22</p>
+        <p class="CDB-Text CDB-Size-small">CartoDB Color Scales Tool v0.21 by <a href="https://github.com/AbelVM" target=_blank>AbelVM</a> 2016-08-01</p>
     </div>
 
     <!-- The Modal -->
@@ -307,7 +307,17 @@
                         <option value=7 selected>7</option>
                     </select>
                 </div>
-
+                <div class="u-tSpace-xl CDB-Text CDB-Fieldset">
+                    <div class="u-iblock CDB-Text CDB-Size-medium u-rSpace--xl" style="position:relative;">
+                        <input class="CDB-Checkbox" type="checkbox" name="helix" value="helix" id='helix'>
+                        <span class="u-iBlock CDB-Checkbox-face"></span>
+                        <label class="u-iBlock u-lSpace">Use <a href='http://www.mrao.cam.ac.uk/~dag/CUBEHELIX/' target=_blank>Cube-Helix</a> color schema for sequential scale</label>
+                    </div>
+                </div>
+                <div class="u-tSpace-xl CDB-Text CDB-Fieldset">
+                    <p class="CDB-Legend CDB-Text is-semibold CDB-Size-medium u-rSpace--m">Helix rotations</p>
+                    <input id="rotations" type="number" class="CDB-InputText CDB-Text" min=-2 max=2 step=0.05 value=-0.35>
+                </div>
                 <div class="u-tSpace-xl CDB-Text CDB-Fieldset">
                     <p class="CDB-Legend CDB-Text is-semibold CDB-Size-medium u-rSpace--m">Sequential</p>
                     <input type="text" name="text" class="CDB-InputText" id="seq-s">
