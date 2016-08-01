@@ -433,7 +433,7 @@ Si non confectus, non reficiat
                 f,
                 t = [],
                 d = [],
-                names = ['Original scale', 'Interpolated scale', 'Log-start scale', 'Log-end scale', 'Log-center scale', 'Log shifted to POI scale', 'n-tile scale', 'Jenks scale', 'StdDev scale', 'Ckmeans.1d.dp'],
+                names = ['Original scale', 'Interpolated scale', 'Log-start scale', 'Log-end scale', 'Log-center scale', 'Log shifted to POI scale', 'n-tile scale', 'Jenks scale', 'Ckmeans.1d.dp', 'StdDev scale'],
                 tfun = function (ii, rr, ww) {
                     return '<div style="height:' + h0 + 'px;width:' + ww + '%;background:' + rr[ii] + ';" title="' + rr[ii] + '"></div>'
                 },
@@ -621,6 +621,8 @@ Si non confectus, non reficiat
                 span = document.getElementsByClassName("close")[0],
                 colorinput = document.querySelector('input[type=color]'),
                 colortext = document.querySelector('#colorhex'),
+                helix = document.querySelector('#helix'),
+                rotations = document.querySelector('#rotations'),
                 color,
                 steps,
                 flag = false,
@@ -633,8 +635,21 @@ Si non confectus, non reficiat
                         c.brighten(1),
                         c.brighten(2),
                         c.brighten(3)
-                        ];
-                    return colors.splice((7 - steps) / 2, steps)
+                        ],
+                        h, l0, l1, ch;
+                    colors = colors.splice((7 - steps) / 2, steps);
+                    h = colors[0].hsl()[0];
+                    l0 = colors[0].hsl()[2];
+                    l1 = colors[steps - 1].hsl()[2];
+                    ch = chroma.cubehelix()
+                        .start(h)
+                        .rotations(rotations.value*1)
+                        .gamma(0.7)
+                        .lightness([l0, l1])
+                    .scale() // convert to chroma.scale
+                        .correctLightness()
+                        .colors(steps);
+                    return (helix.checked)?ch:colors;
                 },
                 div = function (c) {
                     var ca = c.hsl(),
@@ -672,19 +687,19 @@ Si non confectus, non reficiat
                     carray[0] = (carray[0] + 180) % 360;
                     c2 = chroma(carray, 'hsl');
                     cc = [c, c2];
-                    if (steps == 3){
+                    if (steps == 3) {
                         return [c, '#ccc', c2];
-                    }else{
-                        colors = chroma.scale(['#aaa', '#ddd']).mode('lab').correctLightness(true).colors(steps-2);
+                    } else {
+                        colors = chroma.scale(['#aaa', '#ddd']).mode('lab').correctLightness(true).colors(steps - 2);
                         colors = colors.map(function (a, b) {
-                            return chroma.mix(a, d[b+7-steps], 0.1)
+                            return chroma.mix(a, d[b + 7 - steps], 0.1)
                         })
                         return [c].concat(colors).concat([c2]);
                     }
                 },
                 crun = function (e) {
                     var val = (e.target) ? e.target.value : e;
-                    steps = document.querySelector('#seedsteps').value*1;
+                    steps = document.querySelector('#seedsteps').value * 1;
                     color = chroma(val);
                     var seqc = seq(color),
                         divc = div(color),
@@ -692,7 +707,7 @@ Si non confectus, non reficiat
                         getSca = function (c) {
                             var txt = '';
                             for (var i = 0; i < c.length; i++) {
-                                txt += '<div style="height:40px;width:'+(100/steps)+'%;background:' + c[i] + ';" title="' + c[i] + '"></div>';
+                                txt += '<div style="height:40px;width:' + (100 / steps) + '%;background:' + c[i] + ';" title="' + c[i] + '"></div>';
                             }
                             return txt;
                         };
@@ -708,7 +723,7 @@ Si non confectus, non reficiat
                     }
                     colortext.value = val;
                 },
-                goScales = function(selection){
+                goScales = function (selection) {
                     var ff = window.myapp.fields;
                     ff[4].value = (ff[3].checked) ? selection.split(',').reverse() : selection;
                     ff[5].value = steps;
@@ -734,8 +749,13 @@ Si non confectus, non reficiat
                     modal.style.display = "none";
                 }
             };
+            helix.onchange = rotations.onchange = rotations.oninput = function () {
+                crun(colorinput.value)
+            };
             colorinput.onchange = colorinput.oninput = crun;
-            document.querySelector('#seedsteps').onchange = function(){crun(colorinput.value)};
+            document.querySelector('#seedsteps').onchange = function () {
+                crun(colorinput.value)
+            };
             colortext.onchange = colortext.oninput = colortext.onkeyup = function () {
                 var matches = this.value.match(/#[a-f0-9]{6}/g);
                 if (matches == void 0 || matches.length > 1) return;
@@ -747,13 +767,13 @@ Si non confectus, non reficiat
                     console.log(error);
                 }
             };
-            document.querySelector('#go-seq').onclick = function(){
+            document.querySelector('#go-seq').onclick = function () {
                 goScales(document.querySelector('#seq-s').value);
             };
-            document.querySelector('#go-div').onclick = function(){
+            document.querySelector('#go-div').onclick = function () {
                 goScales(document.querySelector('#div-s').value);
             };
-            document.querySelector('#go-out').onclick = function(){
+            document.querySelector('#go-out').onclick = function () {
                 goScales(document.querySelector('#out-s').value);
             };
             crun('#3AA9E3');

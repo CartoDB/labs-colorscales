@@ -22,6 +22,12 @@ Test it at
 
 ## CHANGELOG
 
+#### v 0.21
+* Added [Cube-helix](http://www.mrao.cam.ac.uk/~dag/CUBEHELIX/) color scheme to the scales generator wizard
+* Updated Chroma.js to 1.2.0
+* Updated license
+* Minor fixes
+
 #### v 0.20b
 * Fixed extra bucket in StdDev ramp
 
