@@ -438,7 +438,7 @@ Si non confectus, non reficiat
                     return '<div style="height:' + h0 + 'px;width:' + ww + '%;background:' + rr[ii] + ';" title="' + rr[ii] + '"></div>'
                 },
                 dfun = function (ii, rr, ww) {
-                    return '<div class="chartblock" style="height:' + chroma(rr[ii]).lab()[0] + 'px;width:' + ww + '%;"></div>'
+                    return '<div class="chartblock" style="height:' + 100*chroma(rr[ii]).hsl()[2] + 'px;width:' + ww + '%;"></div>'
                 },
                 cfun = function (ii, qq) {
                     if (p.fieldtype == 'polygon') {
@@ -657,25 +657,26 @@ Si non confectus, non reficiat
                         c2,
                         s1, s2,
                         gr = '#ccc';
-                    ca[0] = (ca[0] + 180) % 360;
-                    c2 = chroma(ca, 'hsl');
+                    //ca[0] = (ca[0] + 180) % 360;
+                    c2 = chroma.hsl(((ca[0] + 180) % 360),ca[1],ca[2]);
                     switch (steps) {
-                    case 3:
-                        return chroma.bezier([c, gr, c2]).scale().mode('lab').colors(3);
-                        break;
-                    case 5:
-                        s1 = chroma.scale([c, gr]).mode('lab').correctLightness(true).colors(3);
-                        s2 = chroma.scale([gr, c2]).mode('lab').correctLightness(true).colors(3);
-                        s1.pop();
-                        return s1.concat(s2);
-
-                        break;
-                    case 7:
-                        s1 = chroma.scale([c, gr]).mode('lab').correctLightness(true).colors(4);
-                        s2 = chroma.scale([gr, c2]).mode('lab').correctLightness(true).colors(4);
-                        s1.pop();
-                        return s1.concat(s2);
-                        break;
+                        case 3:
+                            return chroma.bezier([c, gr, c2]).scale().mode('lab').colors(3);
+                            break;
+                        case 5:
+                            s1 = chroma.scale([c, gr]).mode('lab').correctLightness(true).colors(3);
+                            s2 = chroma.scale([gr, c2]).mode('lab').correctLightness(true).colors(3);
+                            s1.pop();
+                            return s1.concat(s2);
+                            break;
+                        case 7:
+                            s1 = chroma.scale([c, gr]).mode('lab').correctLightness(true)
+                            .colors(4);
+                            s2 = chroma.scale([gr, c2]).mode('lab').correctLightness(true)
+                            .colors(4);
+                            s1.pop();
+                            return s1.concat(s2);
+                            break;
                     }
 
                 },
