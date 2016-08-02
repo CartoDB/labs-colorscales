@@ -22,6 +22,9 @@ Test it at
 
 ## CHANGELOG
 
+#### v 0.22
+* Fixed luminosity for diverging scales
+
 #### v 0.21b
 * Added gamma tweaking for cube-helix
 
