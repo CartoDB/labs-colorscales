@@ -442,7 +442,8 @@ Si non confectus, non reficiat
                 },
                 cfun = function (ii, qq) {
                     if (p.fieldtype == 'polygon') {
-                        return '\n	[' + p.fieldname + '>' + qq[ii] + ']{\n		polygon-fill: @color' + ii + ';\n		line-color: lighten(@color' + ii + ',5);\n       }';
+                        // return '\n	[' + p.fieldname + '>' + qq[ii] + ']{\n		polygon-fill: @color' + ii + ';\n		line-color: lighten(@color' + ii + ',5);\n       }';
+                        return '\n	[' + p.fieldname + '>' + qq[ii] + ']{\n		polygon-fill: @color' + ii + ';\n		}';
                     }
                     if (p.fieldtype == 'marker') {
                         return '\n	[' + p.fieldname + '>' + qq[ii] + ']{\n		marker-fill: @color' + ii + ';\n		marker-line-color: darken(@color' + ii + ',5);\n       }';
