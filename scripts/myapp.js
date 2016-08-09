@@ -468,7 +468,7 @@ Si non confectus, non reficiat
                         return '@color' + b + ': ' + a + ';\n'
                     }).join('');
                     if (p.fieldtype == 'polygon') {
-                        window.myapp.cartocss[jj] += '\n#' + layername + '{\npolygon-opacity: 0.9;\npolygon-fill: @color0;\nline-opacity: 1;\nline-width: 0.5;\nline-color: lighten(@color0,5);\n';
+                        window.myapp.cartocss[jj] += '\n#' + layername + '{\npolygon-opacity: 0.9;\npolygon-gamma: 0.5;\npolygon-fill: @color0;\nline-opacity: 0.25;\nline-width: 0.25;\nline-color: #fff;\nline-comp-op: hard-light;\n';
                     } else if (p.fieldtype == 'marker') {
                         window.myapp.cartocss[jj] += '\n#' + layername + '{\nmarker-fill:@color0;\nmarker-fill-opacity: 0.9;\nmarker-line-color: darken(@color0,5);\nmarker-line-width: 1;\nmarker-line-opacity: 0.9;\nmarker-width: 8;\nmarker-allow-overlap: true;\n';
                     } else {

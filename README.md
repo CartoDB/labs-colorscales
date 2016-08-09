@@ -22,6 +22,9 @@ Test it at
 
 ## CHANGELOG
 
+#### v 0.22b
+* Updated CSS for polygons
+
 #### v 0.22
 * Fixed lightness for diverging scales
 
