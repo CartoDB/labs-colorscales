@@ -603,7 +603,7 @@ Si non confectus, non reficiat
                 window.myapp.layers = layers;
                 getLayers();
                 window.myapp.layer = layers.models.filter(function (a) {
-                    return a.attributes.layer_name == layername.replace(/ /g, '_');
+                    if(a.attributes.layer_name != void 0) return a.attributes.layer_name.replace(/ /g, '_') == layername.replace(/ /g, '_');
                 })[0];
                 if (window.myapp.layer != void 0) {
                     window.myapp.params.query = (window.myapp.layer.attributes.sql != void 0) ? window.myapp.layer.attributes.sql : vis._analysisCollection.models.filter(function (a) {
@@ -789,7 +789,6 @@ Si non confectus, non reficiat
                     if (getScaleParams()) return;
                     cdb.$('.myloader').addClass('is-visible');
                     goMap(function () {
-                        setQuery();
                         getColors();
                         getDataparams(function () {
                             getScaleParams();
@@ -845,36 +844,45 @@ Si non confectus, non reficiat
                     buildScales();
                     setCSS(scaleindex);
                 };
+
+            // viz
             ff[0].onkeyup = ff[0].onchange = function () {
                 ff[1].value = '';
                 ff[2].value = '';
                 getScaleParams();
-                if (window.myapp.params.viz != '') goMap();
+                if (window.myapp.params.viz != '') goMap(setQuery);
             }
             ff[0].onclick = ff[0].onfocus = function () {
                 this.select()
             }
+
+            // layer
             ff[1].onkeyup = ff[1].onchange = ff[1].oninput = ff[1].onautocomplete = function () {
                 ff[2].value = '';
                 getScaleParams();
                 window.myapp.layer = window.myapp.layers.models.filter(function (a) {
-                    return a.attributes.layer_name == myapp.params.layername.replace(/ /g, '_');
+                    if (a.attributes.layer_name != void 0) return a.attributes.layer_name.replace(/ /g, '_') == myapp.params.layername.replace(/ /g, '_');
                 })[0];
                 if (window.myapp.layer != void 0) {
                     window.myapp.params.query = (window.myapp.layer.attributes.sql != void 0) ? window.myapp.layer.attributes.sql : vis._analysisCollection.models.filter(function (a) {
                         return a.id == window.myapp.layer.attributes.source
                     })[0].attributes.query;
+                    setQuery();
                     getFields();
                 } else {
                     window.myapp.params.query = '';
                 };
             };
+
+            // field
             ff[2].onkeyup = ff[2].onchange = ff[2].oninput = ff[2].onautocomplete = function () {
                 var val = window.myapp.columns.some(function (a) {
                     return a.toLowerCase() == ff[2].value.toLowerCase()
                 })
                 if (val) change_field();
             }
+
+            // stuff
             ff[3].onchange = flipscale;
             ff[4].onkeyup = change_colors;
             ff[5].onchange = ff[5].onkeyup = change_colors;

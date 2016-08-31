@@ -22,6 +22,9 @@ Test it at
 
 ## CHANGELOG
 
+#### v 0.23
+* Fixed layer names with spaces
+
 #### v 0.22b
 * Updated CSS for polygons
 
