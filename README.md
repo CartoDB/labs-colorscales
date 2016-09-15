@@ -22,6 +22,10 @@ Test it at
 
 ## CHANGELOG
 
+#### v 0.24
+* Fixed error when null geometries
+* Added warning if dataset is private
+
 #### v 0.23
 * Fixed layer names with spaces
 

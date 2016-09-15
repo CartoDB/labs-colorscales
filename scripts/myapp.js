@@ -293,7 +293,7 @@ Si non confectus, non reficiat
 
             if (window.myapp.params.query == '') return;
 
-            window.myapp.params.sql.execute('with b as(' + window.myapp.params.query + ') select GeometryType(the_geom_webmercator) as type, pg_typeof(' + window.myapp.params.fieldname + ') as f from b limit 1').done(function (data) {
+            window.myapp.params.sql.execute('with b as(' + window.myapp.params.query + ') select GeometryType(the_geom) as type, pg_typeof(' + window.myapp.params.fieldname + ') as f from b where the_geom is not null limit 1').done(function (data) {
 
                 if (data.rows.length == 0) return;
                 if (['smallint', 'integer', 'bigint', 'decimal', 'numeric', 'real', 'double precision', 'smallserial', 'serial', 'bigserial'].some(function (a) {
@@ -438,7 +438,7 @@ Si non confectus, non reficiat
                     return '<div style="height:' + h0 + 'px;width:' + ww + '%;background:' + rr[ii] + ';" title="' + rr[ii] + '"></div>'
                 },
                 dfun = function (ii, rr, ww) {
-                    return '<div class="chartblock" style="height:' + 100*chroma(rr[ii]).hsl()[2] + 'px;width:' + ww + '%;"></div>'
+                    return '<div class="chartblock" style="height:' + 100 * chroma(rr[ii]).hsl()[2] + 'px;width:' + ww + '%;"></div>'
                 },
                 cfun = function (ii, qq) {
                     if (p.fieldtype == 'polygon') {
@@ -603,7 +603,7 @@ Si non confectus, non reficiat
                 window.myapp.layers = layers;
                 getLayers();
                 window.myapp.layer = layers.models.filter(function (a) {
-                    if(a.attributes.layer_name != void 0) return a.attributes.layer_name.replace(/ /g, '_') == layername.replace(/ /g, '_');
+                    if (a.attributes.layer_name != void 0) return a.attributes.layer_name.replace(/ /g, '_') == layername.replace(/ /g, '_');
                 })[0];
                 if (window.myapp.layer != void 0) {
                     window.myapp.params.query = (window.myapp.layer.attributes.sql != void 0) ? window.myapp.layer.attributes.sql : vis._analysisCollection.models.filter(function (a) {
@@ -645,13 +645,13 @@ Si non confectus, non reficiat
                     l1 = colors[steps - 1].hsl()[2];
                     ch = chroma.cubehelix()
                         .start(h)
-                        .rotations(rotations.value*1)
-                        .gamma(gamma.value*1)
+                        .rotations(rotations.value * 1)
+                        .gamma(gamma.value * 1)
                         .lightness([l0, l1])
-                    .scale() // convert to chroma.scale
+                        .scale() // convert to chroma.scale
                         .correctLightness()
                         .colors(steps);
-                    return (helix.checked)?ch:colors;
+                    return (helix.checked) ? ch : colors;
                 },
                 div = function (c) {
                     var ca = c.hsl(),
@@ -659,25 +659,25 @@ Si non confectus, non reficiat
                         s1, s2,
                         gr = '#ccc';
                     //ca[0] = (ca[0] + 180) % 360;
-                    c2 = chroma.hsl(((ca[0] + 180) % 360),ca[1],ca[2]);
+                    c2 = chroma.hsl(((ca[0] + 180) % 360), ca[1], ca[2]);
                     switch (steps) {
-                        case 3:
-                            return chroma.bezier([c, gr, c2]).scale().mode('lab').colors(3);
-                            break;
-                        case 5:
-                            s1 = chroma.scale([c, gr]).mode('lab').correctLightness(true).colors(3);
-                            s2 = chroma.scale([gr, c2]).mode('lab').correctLightness(true).colors(3);
-                            s1.pop();
-                            return s1.concat(s2);
-                            break;
-                        case 7:
-                            s1 = chroma.scale([c, gr]).mode('lab').correctLightness(true)
+                    case 3:
+                        return chroma.bezier([c, gr, c2]).scale().mode('lab').colors(3);
+                        break;
+                    case 5:
+                        s1 = chroma.scale([c, gr]).mode('lab').correctLightness(true).colors(3);
+                        s2 = chroma.scale([gr, c2]).mode('lab').correctLightness(true).colors(3);
+                        s1.pop();
+                        return s1.concat(s2);
+                        break;
+                    case 7:
+                        s1 = chroma.scale([c, gr]).mode('lab').correctLightness(true)
                             .colors(4);
-                            s2 = chroma.scale([gr, c2]).mode('lab').correctLightness(true)
+                        s2 = chroma.scale([gr, c2]).mode('lab').correctLightness(true)
                             .colors(4);
-                            s1.pop();
-                            return s1.concat(s2);
-                            break;
+                        s1.pop();
+                        return s1.concat(s2);
+                        break;
                     }
 
                 },
@@ -865,14 +865,18 @@ Si non confectus, non reficiat
                     if (a.attributes.layer_name != void 0) return a.attributes.layer_name.replace(/ /g, '_') == myapp.params.layername.replace(/ /g, '_');
                 })[0];
                 if (window.myapp.layer != void 0) {
-                    node = (window.myapp.layer.attributes.sql != void 0) ? window.myapp.layer.attributes.sql : vis._analysisCollection.models.filter(function (a) {
-                        return a.id == window.myapp.layer.attributes.source
-                    })[0];
-                    if (node.attributes.query == void 0){
-                        alert('You can\'t use this tool with private datasets!!\ Change the privacy level to public or "with link" and try again');
-                        return false;
+                    if (window.myapp.layer.attributes.sql != void 0) {
+                        window.myapp.params.query = window.myapp.layer.attributes.sql;
+                    } else {
+                        node = vis._analysisCollection.models.filter(function (a) {
+                            return a.id == window.myapp.layer.attributes.source
+                        })[0];
+                        if (node.attributes.query == void 0) {
+                            alert('You can\'t use this tool with PRIVATE datasets!!\ Change the dataset privacy level to public or "with link" and try again');
+                            return false;
+                        }
+                        window.myapp.params.query = node.attributes.query;
                     }
-                    window.myapp.params.query = node.attributes.query;
                     setQuery();
                     getFields();
                 } else {
