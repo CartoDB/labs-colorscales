@@ -858,15 +858,21 @@ Si non confectus, non reficiat
 
             // layer
             ff[1].onkeyup = ff[1].onchange = ff[1].oninput = ff[1].onautocomplete = function () {
+                var node;
                 ff[2].value = '';
                 getScaleParams();
                 window.myapp.layer = window.myapp.layers.models.filter(function (a) {
                     if (a.attributes.layer_name != void 0) return a.attributes.layer_name.replace(/ /g, '_') == myapp.params.layername.replace(/ /g, '_');
                 })[0];
                 if (window.myapp.layer != void 0) {
-                    window.myapp.params.query = (window.myapp.layer.attributes.sql != void 0) ? window.myapp.layer.attributes.sql : vis._analysisCollection.models.filter(function (a) {
+                    node = (window.myapp.layer.attributes.sql != void 0) ? window.myapp.layer.attributes.sql : vis._analysisCollection.models.filter(function (a) {
                         return a.id == window.myapp.layer.attributes.source
-                    })[0].attributes.query;
+                    })[0];
+                    if (node.attributes.query == void 0){
+                        alert('You can\'t use this tool with private datasets!!\ Change the privacy level to public or "with link" and try again');
+                        return false;
+                    }
+                    window.myapp.params.query = node.attributes.query;
                     setQuery();
                     getFields();
                 } else {
